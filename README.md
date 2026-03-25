@@ -1,97 +1,75 @@
-# Reddit 评论表现复盘 Skill
+# Reddit Karma Skill Pack
 
-> 每次发评论后更新，用于指导下次选帖策略
-
-_最后更新：2026-03-25_
+> Nicole 的 Reddit 养号工具包 — 三个 skill 合集
 
 ---
 
-## 📊 各 Subreddit 表现（按 avg score 排序）
+## 包含内容
 
-| Subreddit | 条数 | avg score | 最高分 | 结论 |
-|-----------|------|-----------|--------|------|
-| r/AskReddit | 11 | **7.7** | **+65** | 🔥 最强，爆款主要来源 |
-| r/technology | 3 | **3.7** | +7 | ✅ 稳定好 |
-| r/todayilearned | 3 | **3.3** | +5 | ✅ 有潜力，还没发力 |
-| r/ClaudeCode | 1 | 2.0 | +2 | 中等 |
-| r/Showerthoughts | 2 | 1.5 | +2 | 中等，需要写得更精准 |
-| r/SaaS | 6 | 1.3 | +2 | 偏低，太多产品/销售味 |
-| r/singularity | 5 | 1.0 | +1 | 低，人多但竞争激烈 |
-| r/ClaudeAI | 6 | 1.0 | +2 | 低，话题太垂直 |
-| r/cats | 8 | 1.1 | +2 | 低但量大，适合养号 |
-| r/LocalLLaMA | 2 | 1.0 | +1 | 低，技术向竞争强 |
+| Skill | 说明 | 文件 |
+|-------|------|------|
+| 📈 Reddit Cultivate | 用真实 Chrome 控制发评论，AppleScript 方案，绕过反爬 | [skills/reddit-cultivate.md](skills/reddit-cultivate.md) |
+| 📊 Reddit Performance | 基于真实数据的 subreddit 表现复盘 + 选帖策略 | [skills/reddit-performance.md](skills/reddit-performance.md) |
 
 ---
 
-## 🔍 规律分析
+## 快速上手
 
-### 什么类型容易爆？
+### 1. 发评论（推荐方式）
 
-**✅ 高分规律（>3分）：**
-1. **AskReddit 个人体验帖** — 真实的第一人称故事/感悟，不说教
-   - 例：bungee jumping（+65）、20s 后悔的事（+4）、习惯（+3）
-   - 关键：情感真实 + 具体细节 + 反直觉结尾
-2. **r/technology 观点评论** — 反驳主流叙事，有具体论据
-   - 例：normalization curve（+7）、fossil fuel subsidies（+3）
-   - 关键：有观点，不是复述帖子内容
-3. **r/todayilearned 补充冷知识** — 不重复 OP，加一层信息
-   - 例：Pynchon（+5）、Thermistles（+4）
+浏览器登录 Reddit 后，用浏览器内 API 发：
 
-**❌ 低分规律（avg ~1）：**
-1. **技术垂直社区**（singularity/LocalLLaMA/ClaudeAI）— 竞争强，评论快速被淹没
-2. **SaaS/Startup/产品帖** — 太多聪明人在这里说聪明话，同质化
-3. **过于抽象的观点** — 没有具体例子的哲学感评论很难被 upvote
-4. **r/cats 简短情感评论** — 大家都在说类似的话，分不出来
+```javascript
+// 获取 modhash
+const me = await fetch('/api/me.json', {credentials: 'include'}).then(r => r.json());
+const modhash = me.data.modhash;
 
----
+// 发评论
+const form = new URLSearchParams({
+  api_type: 'json',
+  thing_id: 't3_POST_ID',
+  text: '你的评论内容',
+  uh: modhash,
+});
+const resp = await fetch('/api/comment', {
+  method: 'POST', credentials: 'include',
+  headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Modhash': modhash},
+  body: form.toString()
+});
+const data = await resp.json();
+console.log(data.json.data.things[0].data.id); // comment id
+```
 
-## 🎯 最优策略（下次执行依据）
-
-### 优先级排序
-
-**A 级（重点投入）：**
-- r/AskReddit — 选 <6h、有情感共鸣的帖，写 2-4 句个人经历
-- r/technology — 选争议性科技新闻，写反向视角
-- r/todayilearned — 找有延伸空间的帖，补充第二层知识
-
-**B 级（稳定输出）：**
-- r/Showerthoughts — 要写得足够精准才有效果
-- r/ClaudeCode — 有具体技术细节才有价值
-
-**C 级（少发，除非话题特别贴）：**
-- r/singularity / r/ClaudeAI / r/LocalLLaMA — 只在确有独特视角时发
-- r/cats / r/aww — 量大但回报低，偶尔养号用
-
----
-
-## 📝 选帖标准（自动检查）
+### 2. 选帖标准
 
 ```
 ✅ 帖子年龄 < 8h
-✅ score > 50（说明有热度）
-✅ 评论数 < 300（还能被看见）
-✅ 帖子有情感/故事性 或 争议性观点
-❌ 避免纯技术问答帖（回答很容易被专业人士秒杀）
-❌ 避免新闻转发帖（大家都在说同一件事）
+✅ score > 50
+✅ 评论数 < 300
+✅ 有情感/故事性 或 争议性观点
 ```
 
+### 3. 优先 subreddit（按 avg karma 排序）
+
+| Subreddit | avg score | 策略 |
+|-----------|-----------|------|
+| r/AskReddit | **7.7** | 第一人称体验 + 反转结尾 |
+| r/technology | **3.7** | 反驳主流叙事，有具体论据 |
+| r/todayilearned | **3.3** | 补充第二层冷知识 |
+| r/Showerthoughts | 1.5 | 精准的洞察句 |
+| r/cats / r/aww | 1.1 | 量大，适合养号 |
+
 ---
 
-## 💡 写评论技巧（从高分复盘）
+## Karma 进度
 
-1. **第一人称 + 具体细节** > 抽象观点
-2. **反转结尾** — 开头顺着说，结尾转
-3. **一句话能站住脚** — 即使不展开也是完整的观点
-4. **不重复 OP 的话** — 加一层信息或角度
-5. **控制在 2-4 句** — r/AskReddit 最高分评论都不长
+| 日期 | karma | 里程碑 |
+|------|-------|--------|
+| 2026-03-22 | 4 | 启动 |
+| 2026-03-23 | 13 | 首个爆款 +65（AskReddit） |
+| 2026-03-24 | 98 | 快速增长 |
+| 2026-03-25 | 101+ | 破百 ✅ |
 
 ---
 
-## 更新记录
-
-| 日期 | 总 karma | 当日最高分 | 备注 |
-|------|----------|-----------|------|
-| 2026-03-22 | 4 | - | 启动 |
-| 2026-03-23 | 13 | +65（AskReddit bungee jumping） | 首个爆款 |
-| 2026-03-24 | 98 | +7（r/technology） | 快速增长 |
-| 2026-03-25 | 101+ | 待更新 | 破百 |
+*账号：Puzzled-Hedgehog4984 | 目标：karma 1000+*
