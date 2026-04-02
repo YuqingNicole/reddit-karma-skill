@@ -325,3 +325,132 @@ SaaS 的爆款几乎都带具体数字：
 - r/interestingasfuck / r/Showerthoughts：1-2条（探索）
 总计：~13-19条/周
 ```
+
+---
+
+## 六、最优发帖时间（动态判断）
+
+> 不再写死，每次发帖前用以下 JS 检查目标 sub 的热帖时间分布
+
+### 快速判断当前时机
+
+```javascript
+// 检查过去24h热帖的发布时间，判断当前时段是否是黄金窗口
+(async () => {
+    let resp = await fetch("/r/SideProject/hot.json?limit=25", {credentials: "include"});
+    let data = await resp.json();
+    let now = Math.floor(Date.now() / 1000);
+    let posts = data.data.children.map(p => ({
+        title: p.data.title.substring(0, 40),
+        score: p.data.score,
+        age_h: ((now - p.data.created_utc) / 3600).toFixed(1),
+        hour_utc: new Date(p.data.created_utc * 1000).getUTCHours()
+    }));
+    // 找出高分帖集中的发帖小时
+    let hourMap = {};
+    posts.filter(p => p.score > 50).forEach(p => {
+        hourMap[p.hour_utc] = (hourMap[p.hour_utc] || 0) + 1;
+    });
+    document.title = "HOURS:" + JSON.stringify({posts: posts.slice(0,5), peak_hours: hourMap});
+})();
+```
+
+### 通用规律（备用）
+
+| 目标 Sub | 最佳发帖时间（UTC） | 北京时间 |
+|---------|----------------|---------|
+| r/SideProject | 周一-周四 13:00-16:00 | 21:00-00:00 |
+| r/productivity | 周一-周三 12:00-15:00 | 20:00-23:00 |
+| r/LifeProTips | 周二-周四 13:00-17:00 | 21:00-01:00 |
+| r/Entrepreneur | 周一-周四 14:00-17:00 | 22:00-01:00 |
+| r/AskReddit | 全天有效，周五晚高峰 | - |
+| r/technology | 周一-周四 15:00-18:00 | 23:00-02:00 |
+
+**核心原则：** 发帖后前 30 分钟决定能否上热榜，必须在发帖后立即回复每一条评论。
+
+---
+
+## 七、回复监控（每次 session 开始时运行）
+
+> 检查上次发出的评论是否有人回复，及时互动提升 karma
+
+### Step：读取 inbox 回复
+
+```javascript
+(async () => {
+    let resp = await fetch("/message/inbox.json?limit=25&mark=false", {credentials: "include"});
+    let data = await resp.json();
+    let replies = data.data.children
+        .filter(m => m.kind === "t1" && m.data.new === true)
+        .map(m => ({
+            from: m.data.author,
+            subreddit: m.data.subreddit,
+            body: m.data.body.substring(0, 150),
+            score: m.data.score,
+            context: "https://reddit.com" + m.data.context,
+            created: new Date(m.data.created_utc * 1000).toISOString()
+        }));
+    document.title = "INBOX:" + JSON.stringify({count: replies.length, replies: replies});
+})();
+```
+
+### 回复优先级
+
+| 条件 | 行动 |
+|------|------|
+| score > 2 且有实质性问题 | 24h 内回复，加分显著 |
+| score 1-2，普通互动 | 可选，简短回复 |
+| score 0 或负分 | 忽略，不值得投入 |
+| 明显钓鱼/挑衅 | 忽略 |
+
+### 回复原则
+- 不要只说 "thanks!" — 加一句实质内容
+- 承认对方的补充观点，不要防御
+- 2 句以内，保持轻快
+
+---
+
+## 八、Subreddit ROI 追踪（每周更新）
+
+> 每次 session 结束后，把本次评论数据记录到下表
+
+### 记录格式
+
+运行后把结果追加到 reddit-performance.md 的"各 Subreddit 表现"表格：
+
+```javascript
+// 获取最近 25 条评论的得分情况
+(async () => {
+    let resp = await fetch("/user/Puzzled-Hedgehog4984/comments.json?limit=25", {credentials: "include"});
+    let data = await resp.json();
+    let comments = data.data.children.map(c => ({
+        sub: c.data.subreddit,
+        score: c.data.score,
+        body: c.data.body.substring(0, 60),
+        age_h: ((Date.now()/1000 - c.data.created_utc)/3600).toFixed(0)
+    }));
+    // 按 sub 聚合
+    let subMap = {};
+    comments.forEach(c => {
+        if (!subMap[c.sub]) subMap[c.sub] = {count: 0, total: 0, max: 0};
+        subMap[c.sub].count++;
+        subMap[c.sub].total += c.score;
+        subMap[c.sub].max = Math.max(subMap[c.sub].max, c.score);
+    });
+    document.title = "ROI:" + JSON.stringify(subMap);
+})();
+```
+
+### 当前 ROI 排名（2026-04-02 更新）
+
+| Subreddit | 总条数 | avg score | 建议 |
+|-----------|-------|-----------|------|
+| r/technology | 7 | **16.1** | 🔥 优先加大 |
+| r/AskReddit | 21 | 5.0 | ✅ 保持 |
+| r/todayilearned | 5 | 5.4 | ✅ 加量 |
+| r/productivity | 新增 | 待测 | 🆕 |
+| r/LifeProTips | 新增 | 待测 | 🆕 |
+| r/Entrepreneur | 新增 | 待测 | 🆕 |
+| r/ProductManagement | 新增 | 待测 | 🆕 |
+
+> **每周五更新一次**，根据数据调整下周 sub 配比。
