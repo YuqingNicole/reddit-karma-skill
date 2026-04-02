@@ -46,13 +46,33 @@ See `reddit-cultivate` skill for full Method 1 vs Method 2 details.
 
 ## Posting Workflow
 
-### Step 1: Get Modhash
+### Step 0: Dry-Run Preview (Always Do This First)
+
+Before posting, show the user a preview and ask for confirmation:
+
+```
+📋 Post Preview
+━━━━━━━━━━━━━━━━━━
+Subreddit: r/SideProject
+Kind: text post
+Title: [title here]
+Body:
+[body here]
+━━━━━━━━━━━━━━━━━━
+Confirm post? (yes/no)
+```
+
+Only proceed after explicit confirmation.
+
+### Step 1: Get Modhash (with Auto-Retry)
 
 ```bash
 osascript -e 'tell application "Google Chrome" to tell active tab of first window to execute javascript "fetch(\"/api/me.json\",{credentials:\"include\"}).then(r=>r.json()).then(d=>{document.title=\"UH:\"+d.data.modhash})"'
 sleep 2
 osascript -e 'tell application "Google Chrome" to return title of active tab of first window'
 ```
+
+> **Modhash 过期处理：** 若 POST 返回 403 或 `{"error": 403}`，modhash 已失效，重新执行 Step 1 获取新值后重试。每次操作前新获取 modhash 最稳妥。
 
 ### Step 2: Submit Post
 
@@ -188,7 +208,7 @@ Then apply flair:
 | Thursday | 7-9 AM |
 | Friday | 6-8 AM |
 | Saturday | 7-9 AM |
-| Sunday | 8-10 AM |
+| Sunday | 6-8 AM |
 
 Post 30 minutes BEFORE peak times for momentum building.
 

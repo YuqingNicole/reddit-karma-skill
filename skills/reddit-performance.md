@@ -1,3 +1,8 @@
+---
+name: reddit-performance
+description: Reddit account performance analysis and promotion strategy. Reviews karma data by subreddit, identifies high-ROI comment patterns, and provides product post templates with timing strategy. Use when user asks about "reddit performance", "subreddit ROI", "karma analysis", or wants to plan a product launch post on Reddit.
+---
+
 # Reddit 养号与推广 Skill
 
 > 评论养号 + 产品帖推广 两套玩法的完整调研。

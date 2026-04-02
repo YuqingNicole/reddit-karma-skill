@@ -152,7 +152,16 @@ end tell'
 
 ### Step 1: Check Account Status
 
-Get username, karma, verify login using `/api/me.json`.
+Get username, karma, verify login using `/api/me.json`. **Always report the current karma** at the start of each session — this replaces manual tracking in README.
+
+```bash
+# Read current karma
+osascript -e 'tell application "Google Chrome" to tell active tab of first window to execute javascript "fetch(\"/api/me.json\",{credentials:\"include\"}).then(r=>r.json()).then(d=>{document.title=\"ME:\"+JSON.stringify({name:d.data.name,karma:d.data.total_karma,comment_karma:d.data.comment_karma})})"'
+sleep 2
+osascript -e 'tell application "Google Chrome" to return title of active tab of first window'
+```
+
+Report format: `Account: {name} | Total karma: {karma} | Comment karma: {comment_karma}`
 
 ### Step 2: Scan Rising Posts
 
