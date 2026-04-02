@@ -454,3 +454,106 @@ SaaS 的爆款几乎都带具体数字：
 | r/ProductManagement | 新增 | 待测 | 🆕 |
 
 > **每周五更新一次**，根据数据调整下周 sub 配比。
+
+---
+
+## 九、可发产品链接的 Subreddit 完整清单（2026-04-02 调研）
+
+> 基于 rdt sub-info 实际扫描，共 30+ 个。按类别整理，附产品匹配建议。
+
+### 🔥 专为产品推广而生
+
+| Sub | 订阅量 | 适合度 | 备注 |
+|-----|--------|--------|------|
+| r/SideProject | 67万 | ⭐⭐⭐ | 核心地，最包容，格式 `[名] - [描述]` |
+| r/InternetIsBeautiful | 1658万 | ⭐⭐⭐ | 工具/网站，要有美感或独特功能 |
+| r/alphaandbetausers | 3.1万 | ⭐⭐⭐ | 专门给早期产品找测试用户，直接发链接 |
+| r/buildinpublic | 7.6万 | ⭐⭐⭐ | 创业过程+产品分享，社区友好 |
+| r/microsaas | 17.6万 | ⭐⭐⭐ | 小型 SaaS 专区 |
+| r/indiehackers | 16万 | ⭐⭐⭐ | 偏好真实数据+过程 |
+| r/SaaS | 64万 | ⭐⭐ | 有数据/复盘效果更好 |
+| r/IMadeThis | 2.8万 | ⭐⭐ | 展示自己做的东西 |
+| r/coolgithubprojects | 7.7万 | ⭐⭐ | 开源/GitHub 项目 |
+| r/AppIdeas | 8.5万 | ⭐⭐ | 接受实现了的想法 |
+| r/SomebodyMakeThis | 8.9万 | ⭐⭐ | 展示解决了某个需求的产品 |
+| r/nocode | 11.9万 | ⭐⭐ | No-code 工具 |
+
+### 🤖 AI 类
+
+| Sub | 订阅量 | 适合度 | 备注 |
+|-----|--------|--------|------|
+| r/ChatGPT | 1142万 | ⭐⭐⭐ | AI 工具，要有演示截图 |
+| r/ClaudeAI | 69万 | ⭐⭐⭐ | Claude 生态工具 |
+| r/LocalLLaMA | 67万 | ⭐⭐ | 本地 AI/开源工具 |
+| r/OpenAI | 269万 | ⭐⭐ | OpenAI 生态产品 |
+| r/artificial | 124万 | ⭐⭐ | AI 泛话题 |
+
+### 📚 学习/效率类
+
+| Sub | 订阅量 | 适合度 | 备注 |
+|-----|--------|--------|------|
+| r/languagelearning | 334万 | ⭐⭐⭐ | 语言学习工具，linkertube 首选 |
+| r/ObsidianMD | 30万 | ⭐⭐ | 知识管理工具 |
+| r/Notion | 45万 | ⭐⭐ | 效率工具 |
+| r/PKMS | 6.6万 | ⭐⭐ | 个人知识管理 |
+
+### 💼 创业/独立工作类
+
+| Sub | 订阅量 | 适合度 | 备注 |
+|-----|--------|--------|------|
+| r/solopreneur | 5.6万 | ⭐⭐⭐ | 一人创业者，接受工具分享 |
+| r/digitalnomad | 237万 | ⭐⭐ | 数字游民工具 |
+| r/remotework | 48万 | ⭐⭐ | 远程工作效率工具 |
+| r/freelance | 65万 | ⭐⭐ | 自由职业者 |
+| r/startups | 202万 | ⭐ | 故事包装，不能直接推广 |
+| r/Entrepreneur | 512万 | ⭐ | 需要 sub 内 10 comment karma |
+
+### ❌ 禁止发链接
+
+| Sub | 原因 |
+|-----|------|
+| r/ProductManagement | 明文禁止 self-promotion |
+| r/technology | 只接新闻，不接自制产品 |
+| r/LifeProTips | 禁止产品链接 |
+| r/selfimprovement | 明文 NO LINKS |
+| r/EnglishLearning | 有链接的帖子直接删 |
+| r/webdev | 明文禁止 self-promote |
+| r/smallbusiness | 明确不是广告区 |
+| r/productivity | 不鼓励，容易被踩 |
+
+---
+
+## 十、按产品的推广优先级
+
+### deckcleaner.xyz（去除 NotebookLM 水印，免费工具）
+
+**核心卖点：** 免费、本地处理、无需上传、隐私安全
+
+| 优先级 | Sub | 理由 |
+|--------|-----|------|
+| 1 | r/SideProject | 工具型产品最佳首发地 |
+| 2 | r/InternetIsBeautiful | 免费工具+隐私保护角度，符合"美感" |
+| 3 | r/alphaandbetausers | 早期用户反馈 |
+| 4 | r/ChatGPT | NotebookLM 用户聚集地 |
+| 5 | r/nocode | 无需代码的工具用户群 |
+
+**标题模板：**
+> *NotebookLM kept watermarking my exports. Spent a weekend building a browser-based remover — no uploads, runs locally, free*
+
+---
+
+### linkertube.com（YouTube 双语字幕工具）
+
+**核心卖点：** 学语言、免切换、YouTube 双语字幕
+
+| 优先级 | Sub | 理由 |
+|--------|-----|------|
+| 1 | r/languagelearning | 334万，精准受众 |
+| 2 | r/SideProject | 工具首发 |
+| 3 | r/InternetIsBeautiful | 学习工具+设计感 |
+| 4 | r/buildinpublic | 过程分享 |
+| 5 | r/solopreneur | 一人产品故事 |
+
+**标题模板：**
+> *I built a tool that adds bilingual subtitles to any YouTube video — been using it to study languages without switching tabs*
+
