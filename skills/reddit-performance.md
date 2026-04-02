@@ -608,3 +608,115 @@ SaaS 的爆款几乎都带具体数字：
 | r/travel | 1422万 | ⚠️ 谨慎 | 大社区，工具帖偶有通过 |
 | r/solotravel | 450万 | ⚠️ 谨慎 | 以游记为主 |
 
+
+---
+
+## 十一、高广度+高讨论度 Sub 全量清单（按订阅量排序）
+
+> 基于实际 sub-info 扫描，专注"有广度、有讨论度"的大型社区。
+> ✅ 可发链接 | ⚠️ 谨慎/故事包装 | ❌ 禁止
+
+### 🔥 超大综合社区（1000万+）
+
+| Sub | 订阅量 | 状态 | 备注 |
+|-----|--------|------|------|
+| r/todayilearned | 4131万 | ⚠️ | 知识型内容，工具帖极少通过，但知识评论高分 |
+| r/mildlyinteresting | 2505万 | ✅ | 内容宽松，有趣工具可发 |
+| r/explainlikeimfive | 2347万 | ⚠️ | 解释类内容，评论比发帖更有价值 |
+| r/gadgets | 2277万 | ⚠️ | 科技产品，需要产品本身有新闻价值 |
+| r/technology | 2021万 | ❌ | 只接新闻，不接自制产品 |
+| r/YouShouldKnow | 556万 | ⚠️ | 实用知识型，工具帖需以"知识"角度切入 |
+| r/Fitness | 1249万 | ⚠️ | 严格规则，健康科技工具偶有通过 |
+| r/cats | 909万 | ✅ | 宠物内容宽松，宠物相关工具可尝试 |
+| r/math | 394万 | ✅ | 数学工具/可视化受欢迎 |
+
+### 💬 高互动问答社区
+
+| Sub | 订阅量 | 状态 | 备注 |
+|-----|--------|------|------|
+| r/AskMen | 720万 | ⚠️ | 生活话题，AI/工具话题偶尔切入 |
+| r/CasualConversation | 281万 | ⚠️ | 轻松闲聊，故事型帖子 |
+| r/dating_advice | 475万 | ⚠️ | 情感类，AI 约会工具有受众 |
+| r/Adulting | 202万 | ⚠️ | 成年人生活技巧，效率工具有受众 |
+| r/LifeAdvice | 20万 | ⚠️ | 小而活跃，真实建议型 |
+| r/Anxiety | 84万 | ⚠️ | 心理健康，工具需极度谨慎，故事角度 |
+| r/stopdrinking | 65.7万 | ⚠️ | 支持型社区，相关 app 可以分享 |
+
+### 💼 职业/财务
+
+| Sub | 订阅量 | 状态 | 备注 |
+|-----|--------|------|------|
+| r/jobs | 259万 | ⚠️ | 求职工具，故事包装 |
+| r/careeradvice | 78万 | ⚠️ | 职业建议，AI 工具相关话题 |
+| r/beermoney | 150万 | ⚠️ | 赚钱工具/副业，产品可以分享 |
+| r/forhire | 60万 | ⚠️ | 接单/发包，工具服务可发 |
+| r/povertyfinance | 263万 | ⚠️ | 省钱工具，需真实帮助用户 |
+| r/FIRE | 90万 | ⚠️ | 财务自由，投资/效率工具 |
+| r/slavelabour | 45.9万 | ✅ | 低价接单社区，服务/工具可发 |
+
+### 🖥️ 技术/开发
+
+| Sub | 订阅量 | 状态 | 备注 |
+|-----|--------|------|------|
+| r/MachineLearning | 303万 | ⚠️ | 学术偏，开源工具/论文可发 |
+| r/datascience | 273万 | ⚠️ | 数据工具，经验帖可带链接 |
+| r/Twitch | 287万 | ⚠️ | 直播工具有受众 |
+| r/YoutubeCreators | 5.9万 | ⚠️ | 创作者工具，小但精准 |
+| r/statistics | 62万 | ⚠️ | 统计工具/可视化 |
+| r/videography | 43.4万 | ⚠️ | 视频工具，器材向为主 |
+| r/dogs | 286万 | ⚠️ | 宠物相关工具 |
+
+### 🏠 生活/家居
+
+| Sub | 订阅量 | 状态 | 备注 |
+|-----|--------|------|------|
+| r/homeimprovement | 474万 | ⚠️ | DIY 工具，以问答为主 |
+| r/cooking | 607万 | ⚠️ | 食谱工具，AI 烹饪类可尝试 |
+| r/iphone | 456万 | ⚠️ | iOS app 可以聊 |
+| r/mac | 301万 | ⚠️ | Mac 工具软件，社区活跃 |
+| r/windows | 36.6万 | ⚠️ | Windows 工具 |
+| r/NeutralPolitics | 62.6万 | ⚠️ | 政治分析工具，极度谨慎 |
+| r/Pets | 39.5万 | ⚠️ | 宠物综合 |
+
+### ❌ 明确禁止发产品链接
+
+| Sub | 原因 |
+|-----|------|
+| r/DIY | 有严格规则 |
+| r/relationship_advice | 禁止推广 |
+| r/NoStupidQuestions | 禁止链接 |
+| r/Frugal | 禁止推广 |
+| r/apple | 禁止推广 |
+| r/socialskills | 禁止推广 |
+| r/MealPrepSunday | 禁止链接 |
+| r/AskWomen | 禁止推广 |
+| r/Android | 禁止推广 |
+| r/antiwork | 禁止推广 |
+| r/minimalism | 禁止推广 |
+| r/linux | 禁止推广 |
+| r/DecidingToBeBetter | 禁止链接 |
+| r/resumes | 禁止推广 |
+| r/WorkReform | 禁止推广 |
+| r/sleep | 禁止推广 |
+| r/photography | 禁止推广 |
+| r/learnprogramming | 禁止推广 |
+| r/graphic_design | 禁止推广 |
+| r/learnpython | 禁止推广 |
+| r/podcasting | 禁止推广 |
+| r/gardening | 禁止推广 |
+
+---
+
+### 📌 评论养号高价值 Sub（不发产品，靠评论涨 karma）
+
+这些 sub 虽然不能发产品链接，但**评论 karma 回报极高**，值得持续投入：
+
+| Sub | 订阅量 | 评论策略 |
+|-----|--------|---------|
+| r/todayilearned | 4131万 | 补充第二层知识，"更奇的是..." 公式 |
+| r/explainlikeimfive | 2347万 | 生活类比解释复杂概念 |
+| r/AskMen / r/AskWomen | 720万/565万 | 真实第一人称经历 |
+| r/relationship_advice | 1570万 | 有共情、不说教的建议 |
+| r/Anxiety | 84万 | 温和、真实的支持性评论 |
+| r/learnprogramming | 434万 | 清晰解答初学者问题 |
+| r/datascience | 273万 | 实战经验分享 |
