@@ -8,34 +8,33 @@ description: Reddit account performance analysis and promotion strategy. Reviews
 > 评论养号 + 产品帖推广 两套玩法的完整调研。
 > 每次发帖后更新数据部分。
 
-_最后更新：2026-03-26_
+_最后更新：2026-04-02_
 
 ---
 
 ## 一、评论养号数据
 
-### 各 Subreddit 表现（按 avg score 排序）
+### 各 Subreddit 表现（100条评论数据，2026-04-02 更新）
 
-| Subreddit | 条数 | avg score | 最高分 | 结论 |
-|-----------|------|-----------|--------|------|
-| r/AskReddit | 11 | **7.7** | **+65** | 🔥 最强，爆款主要来源 |
-| r/technology | 5 | **3.7** | +7 | ✅ 稳定好 |
-| r/todayilearned | 4 | **3.3** | +5 | ✅ 有潜力 |
-| r/interestingasfuck | 3 | 待测 | - | 🆕 新开，预期高 |
-| r/explainlikeimfive | 1 | 待测 | - | 🆕 新开，2300万订阅 |
-| r/Showerthoughts | 3 | 1.5 | +2 | 中等，需写得更精准 |
-| r/ClaudeCode | 1 | 2.0 | +2 | 中等 |
-| r/SaaS | 6 | 1.3 | +2 | 偏低，销售味重 |
-| r/singularity | 5 | 1.0 | +1 | 低，竞争激烈 |
-| r/ClaudeAI | 6 | 1.0 | +2 | 低，话题太垂直 |
-| r/cats | 8 | 1.1 | +2 | 低但量大，偶尔养号 |
-| r/LocalLLaMA | 2 | 1.0 | +1 | 低，技术向 |
-| r/worldnews | 1 | 待测 | - | 🆕 地缘政治角度 |
-| r/LifeProTips | 1 | 待测 | - | 🆕 实用知识型 |
-| r/YouShouldKnow | 1 | 待测 | - | 🆕 知识补充型 |
-| r/mildlyinteresting | 1 | 待测 | - | 🆕 科普解释型 |
-| r/jobs | 1 | 待测 | - | 🆕 共情类 |
-| r/ChatGPT | 1 | 待测 | - | 🆕 AI 话题主战场 |
+| Subreddit | 条数 | 总 karma | avg score | 最高分 | ROI 评级 | 行动 |
+|-----------|------|----------|-----------|--------|---------|------|
+| r/technology | 7 | 113 | **16.1** | **89** | 🔥🔥 金矿 | 严重欠配，立刻加大 |
+| r/AskReddit | 21 | 105 | 5.0 | 67 | 🔥 主力 | 保持量，靠概率出爆款 |
+| r/todayilearned | 5 | 27 | 5.4 | 16 | ✅ 潜力大 | 每周 3-5 条 |
+| r/Showerthoughts | 6 | 16 | 2.7 | 8 | 中等 | 需要更精准的洞察 |
+| r/interestingasfuck | 1 | 待测 | - | - | 🆕 预期高 | 值得测试 |
+| r/cats | 7 | 9 | 1.3 | 2 | ❌ 停止 | ROI 太差 |
+| r/SaaS | 4 | 6 | 1.5 | 2 | ❌ 停止 | 销售味重 |
+| r/ClaudeAI | 6 | 6 | 1.0 | 2 | ❌ 停止 | 话题太垂直 |
+| r/singularity | 5 | 5 | 1.0 | 1 | ❌ 停止 | 竞争激烈 |
+| r/SideProject | 4 | 4 | 1.0 | 1 | ❌ 停止 | 养号阶段性价比低 |
+| r/explainlikeimfive | 1 | 待测 | - | - | 🆕 2300万订阅 | 待测 |
+| r/worldnews | 1 | 待测 | - | - | 🆕 地缘政治角度 | 待测 |
+| r/LifeProTips | 1 | 待测 | - | - | 🆕 实用知识型 | 待测 |
+| r/YouShouldKnow | 1 | 待测 | - | - | 🆕 知识补充型 | 待测 |
+| r/mildlyinteresting | 1 | 待测 | - | - | 🆕 科普解释型 | 待测 |
+| r/jobs | 1 | 待测 | - | - | 🆕 共情类 | 待测 |
+| r/ChatGPT | 1 | 待测 | - | - | 🆕 AI 话题主战场 | 待测 |
 
 ### 更新记录
 
@@ -46,6 +45,7 @@ _最后更新：2026-03-26_
 | 2026-03-24 | 98 | +7（r/technology） | - | 快速增长 |
 | 2026-03-25 | 101 | +9（AskReddit 女性安全心理） | technology/TIL/Showerthoughts/science | 破百 |
 | 2026-03-26 | 112 | 待更新 | interestingasfuck/ELI5/ChatGPT/LifeProTips/YouShouldKnow/mildlyinteresting/worldnews/jobs | 新开7个 sub |
+| 2026-04-02 | ~320（估算） | +89（r/technology） | - | 100条评论数据分析，制定 → 1000 路径 |
 
 ---
 
@@ -272,3 +272,56 @@ SaaS 的爆款几乎都带具体数字：
 | deckcleaner.xyz | ✅ 随时可发 | 现在 | r/SideProject |
 | linkertube.com | ✅ 随时可发 | 现在 | r/languagelearning |
 | 两者 | ⚠️ 建议先在目标 sub 发 1-2 条评论热身 | 1-2天内 | 各自目标 sub |
+
+---
+
+## 五、从 ~320 → 1000 的增长路径（2026-04-02 制定）
+
+> 还需涨约 680 karma
+
+### 5.1 三种路径对比
+
+| 路径 | avg karma/条 | 需要评论数 | 现实性 |
+|------|-------------|-----------|------|
+| 全靠 r/technology | 16.1 | ~42条 | 难，门槛高 |
+| 全靠 r/AskReddit | 5.0 | ~136条 | 可行但慢 |
+| 全靠 r/TIL | 5.4 | ~126条 | 可行且稳 |
+| **最优组合** | **~8-10** | **~80条** | **最现实** |
+
+### 5.2 最优组合策略（每周目标）
+
+**停止（立刻）：**
+- ❌ r/cats — avg 1.3，性价比最差
+- ❌ r/ClaudeAI / r/singularity / r/openclaw — 垂直技术圈，同质化
+- ❌ 随机散射（SaaS、SideProject、LifeProTips 各1-2条）
+
+**加大投入：**
+- 🔥 r/technology → 每周 **5-8 条**（之前只有7条，严重欠配！）
+- ✅ r/todayilearned → 每周 **3-5 条**（5条已得27分，潜力大）
+
+**维持节奏：**
+- 🔥 r/AskReddit → 保持量（约5条/周），靠概率命中爆款
+
+**新开探索：**
+- 🆕 r/interestingasfuck → 只有1条，知识科普类和TIL逻辑相同，值得测试
+- 🆕 r/Showerthoughts → avg 2.7，有提升空间，需要更精准的洞察
+
+### 5.3 关键洞察：爆款驱动定律
+
+**所有 karma 都是爆款驱动的：**
+- technology 的 89分那条 = 整个 technology karma 的 79%
+- AskReddit 的 67分那条 = AskReddit karma 的 64%
+- TIL 的 16分那条 = TIL karma 的 59%
+
+**结论：策略不是"多发"，是"找对爆款土壤，增加命中次数"**
+
+### 5.4 周计划模板
+
+```
+每周目标（10-15条/周，不超过每日限额）：
+- r/technology：5-8条（高优先级）
+- r/AskReddit：4-5条（量保持）
+- r/TIL：3-4条（稳定输出）
+- r/interestingasfuck / r/Showerthoughts：1-2条（探索）
+总计：~13-19条/周
+```
