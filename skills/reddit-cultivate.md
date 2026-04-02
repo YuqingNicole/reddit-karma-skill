@@ -236,6 +236,35 @@ Where:
 
 This lets the user bookmark, follow up on replies, and track which comments got traction.
 
+### Step 6: Check Reply Notifications (Optional, Run Next Session)
+
+Fetch inbox to see which comments received replies since last session:
+
+```javascript
+(async () => {
+    let resp = await fetch("/message/inbox.json?limit=25", {credentials: "include"});
+    let data = await resp.json();
+    let replies = data.data.children
+        .filter(m => m.kind === "t1" && m.data.type === "comment_reply")
+        .map(m => ({
+            from: m.data.author,
+            subreddit: m.data.subreddit,
+            body: m.data.body.substring(0, 100),
+            context: "https://reddit.com" + m.data.context,
+            score: m.data.score
+        }));
+    document.title = "REPLIES:" + JSON.stringify(replies);
+})();
+```
+
+Report format after reading title:
+
+| From | Sub | Score | Preview | Link |
+|------|-----|-------|---------|------|
+| u/user123 | r/SideProject | +3 | "That's a great point..." | [context link] |
+
+> **When to run:** At the start of a new session before posting new comments. Replies worth responding to: score > 1 or genuine question. Responding within 24h boosts karma significantly.
+
 ---
 
 ## Recommended Target Subreddits
