@@ -160,6 +160,82 @@ end tell'
 
 ## Workflow
 
+### Step 0: Build User Profile (First Session or Weekly Refresh)
+
+Before anything else, scan what subreddits the user has joined. This creates a personalized interest map — far more accurate than guessing from username or karma history.
+
+**Run this once per account, or refresh weekly:**
+
+```bash
+osascript -e 'tell application "Google Chrome" to tell window 1 to make new tab with properties {URL:"https://www.reddit.com"}'
+sleep 3
+osascript -e '
+tell application "Google Chrome"
+    tell last tab of window 1 to execute javascript "
+    (function(){
+        fetch(\"/subreddits/mine/subscriber.json?limit=100\",{credentials:\"include\"})
+        .then(r=>r.json())
+        .then(d=>{
+            var subs=d.data.children
+                .filter(s=>!s.data.display_name.startsWith(\"u_\"))
+                .map(s=>({name:s.data.display_name, subscribers:s.data.subscribers}))
+                .sort((a,b)=>b.subscribers-a.subscribers);
+            document.title=\"JOINED:\"+JSON.stringify(subs);
+        });
+    })()
+    "
+end tell'
+sleep 5
+osascript -e 'tell application "Google Chrome" to return title of last tab of window 1'
+osascript -e 'tell application "Google Chrome" to close last tab of window 1'
+```
+
+**What to do with the data:**
+
+1. **Cluster the subs into interest buckets** — e.g., AI/tech, startup/indie, marketing/SEO, geo/culture, entertainment
+2. **Build a User Interest Profile** with these fields:
+   - Primary identity: (e.g., "indie dev building AI tools")
+   - Core interests: (list top 3-5 themes)
+   - Cultural background signals: (language subs, geo subs)
+   - Tone indicators: (entertainment subs = casual ok; academic subs = formal preferred)
+
+3. **Cross-reference with Sub Persona Table** — which subs from their joined list have a persona defined? Those are immediate candidates.
+
+4. **Flag uncharted subs** — subs they've joined that have no persona entry yet → add to "pending ROI test" list
+
+**Example output:**
+
+```
+User Profile: Puzzled-Hedgehog4984
+- Identity: indie developer / AI tools builder / content creator
+- Core interests: AI (LocalLLaMA, OpenAI, openclaw), SEO (SEO, SEO_for_AI), 
+                  startups (SideProject, Entrepreneur, IndieDev), marketing
+- Culture signals: China-adjacent (China, chinalife, WriteStreakCN)
+- Tone: mix of technical + casual (memes, cats, Unexpected joined = humor ok)
+
+Recommended sub priority for karma building:
+  Tier 1 (proven ROI + interest match): r/technology, r/AskReddit, r/todayilearned
+  Tier 2 (interest match, untested): r/Unexpected, r/WatchPeopleDieInside, r/IndieDev
+  Tier 3 (niche, test carefully): r/SEO, r/SaaS, r/ProductManagement
+
+Pending ROI test (joined, no data yet):
+  r/Unexpected, r/WatchPeopleDieInside, r/WriteStreakCN, r/CrappyDesign
+```
+
+---
+
+**Recommended action rules based on profile:**
+
+| Profile Signal | Action |
+|----------------|--------|
+| Joined entertainment subs (memes, Unexpected) | Include 1-2 casual/humor subs per session |
+| Joined many AI/tech subs | r/technology is natural voice — prioritize |
+| Joined geo/culture subs | Can use personal cultural lens in AskReddit comments |
+| Joined small niche subs (<50K) | Low competition, easy visibility — test with 1-2 comments |
+| Joined writing subs | AskReddit and TIL writing style will feel natural |
+
+---
+
 ### Step 1: Check Account Status
 
 Get username, karma, verify login using `/api/me.json`. **Always report the current karma** at the start of each session — this replaces manual tracking in README.
