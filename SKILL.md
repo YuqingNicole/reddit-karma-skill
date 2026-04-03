@@ -37,6 +37,6 @@ Track daily usage across all three skills to avoid triggering Reddit spam detect
 
 ## Account Status
 
-- **Account:** Puzzled-Hedgehog4984
+- **Account:** YOUR_REDDIT_USERNAME
 - **Target:** 1,000 karma
 - Check current karma by running Step 1 of `reddit-cultivate`.
