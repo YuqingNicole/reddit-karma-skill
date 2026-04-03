@@ -49,21 +49,31 @@ fi
 
 Works when `count of windows > 0`.
 
-### Navigate
+### Navigate (New Tab — Do Not Replace Current Tab)
+
+Always open a new tab for Reddit operations. Never use `set URL to` on the active tab — it interrupts the user's current browsing.
 
 ```bash
-osascript -e 'tell application "Google Chrome" to tell active tab of first window to set URL to "https://www.reddit.com/r/SideProject/rising/"'
+# Open new tab
+osascript -e 'tell application "Google Chrome" to tell window 1 to make new tab with properties {URL:"https://www.reddit.com"}'
+sleep 3
+
+# Operate on last tab
+# ... execute JS on last tab of window 1 ...
+
+# Close when done
+osascript -e 'tell application "Google Chrome" to close last tab of window 1'
 ```
 
 ### Execute JS & Read Result (document.title trick)
 
 ```bash
-# Run JS that writes result to document.title
-osascript -e 'tell application "Google Chrome" to tell active tab of first window to execute javascript "fetch(\"/api/me.json\",{credentials:\"include\"}).then(r=>r.json()).then(d=>{document.title=\"R:\"+JSON.stringify({name:d.data.name,karma:d.data.total_karma})})"'
+# Run JS that writes result to document.title (use last tab, not active tab)
+osascript -e 'tell application "Google Chrome" to tell last tab of window 1 to execute javascript "fetch(\"/api/me.json\",{credentials:\"include\"}).then(r=>r.json()).then(d=>{document.title=\"R:\"+JSON.stringify({name:d.data.name,karma:d.data.total_karma})})"'
 
 # Wait, then read title
 sleep 2
-osascript -e 'tell application "Google Chrome" to return title of active tab of first window'
+osascript -e 'tell application "Google Chrome" to return title of last tab of window 1'
 ```
 
 ### JXA for Complex JS (avoids escaping hell)
