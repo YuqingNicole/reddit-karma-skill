@@ -108,4 +108,4 @@ const resp = await fetch('/api/comment', {
 
 ---
 
-*账号：Puzzled-Hedgehog4984*
+*账号：YOUR_REDDIT_USERNAME*
