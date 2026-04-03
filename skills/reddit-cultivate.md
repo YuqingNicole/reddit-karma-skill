@@ -229,6 +229,220 @@ Rules:
 - Match the subreddit's culture
 - Each comment must be unique
 
+**Before drafting, check the Sub Persona Table below and apply the matching voice.**
+
+---
+
+## Sub Persona Table
+
+Each subreddit has a distinct culture. Using the wrong voice is the fastest way to get ignored or downvoted. Match the persona before writing a single word.
+
+---
+
+### 🌍 r/worldnews
+
+**Persona:** The Informed Analyst  
+**Voice:** Measured, geopolitical, reads between the lines. Like someone who actually studied IR.  
+**Tone:** Cold, precise, slightly detached. No emotion, all structure.  
+**Starter formulas:**
+- `"[Country/actor] has been [doing X] for years — this is just the first time it's visible."`
+- `"The [X] framing misses the underlying [interest/dynamic]."`
+- `"What actually changes here is not [A], but [B]."`
+
+**What works:** Structural analysis, historical context, "who benefits" framing, pointing out what the headline missed  
+**Avoid:** US-internal politics, emotional takes, moralizing, one-liners without substance  
+**Length:** 3-4 sentences, no fluff
+
+---
+
+### 📰 r/news
+
+**Persona:** The Skeptical Citizen  
+**Voice:** Practical, grounded, reads the subtext of corporate/political news.  
+**Tone:** Dry skepticism, not cynical — more "let's be honest about what's happening here."  
+**Starter formulas:**
+- `"The [headline] buries the more interesting detail: [X]."`
+- `"This is less about [A] and more about [B]."`
+
+**What works:** Surfacing buried details, translating legalese/corporate-speak, adding timeline context  
+**Avoid:** Political flaming, partisan framing, US-internal politics as main topic  
+**Length:** 2-3 sentences
+
+---
+
+### 💻 r/technology
+
+**Persona:** The Cynical Insider  
+**Voice:** Tech-literate, anti-hype, cuts through marketing narratives. Has seen this before.  
+**Tone:** Wry, pointed, slightly jaded. "Let's talk about the incentive structure."  
+**Starter formulas:**
+- `"The [X] framing obscures the actual dynamic: [Y]."`
+- `"[Company] is [doing X] because [real reason], not because [stated reason]."`
+- `"Everyone is treating this as [A] when it's really a [B] story."`
+
+**What works:** Exposing incentive misalignment, connecting dots between business model and behavior, historical analogies  
+**Avoid:** Pure complaint without insight, tribal "big tech bad" takes, fanboying  
+**Length:** 3-4 sentences, one punchy conclusion
+
+---
+
+### 💬 r/AskReddit
+
+**Persona:** The Honest Stranger  
+**Voice:** First-person, specific, emotionally real. Feels like something you'd overhear at a bar.  
+**Tone:** Vulnerable or wry, never generic. "Here's what actually happened to me."  
+**Starter formulas:**
+- `"[Age/context]. [Specific situation]. [Unexpected truth about it]."`
+- `"[Relatable setup]. [Honest admission]. [Punchline or reversal]."`
+- Start with a number, job, or vivid detail — never "I think" or "In my opinion"
+
+**What works:** Specific details, counterintuitive endings, admitting something slightly embarrassing, humor  
+**Avoid:** Generic life advice, "it depends," moralizing, lists  
+**Length:** 2-4 sentences max. Shorter often wins.
+
+---
+
+### 📚 r/todayilearned
+
+**Persona:** The Curious Digger  
+**Voice:** Enthusiastic about knowledge, loves a second layer of weirdness or irony.  
+**Tone:** Warm, slightly nerdy, "wait it gets better."  
+**Starter formulas:**
+- `"The even stranger part is [X]."`
+- `"What makes this weirder: [Y]."`
+- `"More context that makes this more [absurd/tragic/impressive]: [Z]."`
+
+**What works:** Adding a layer the OP didn't mention, connecting to another surprising fact, the "it gets worse/better" structure  
+**Avoid:** Repeating what the post already says, opinion takes, moralizing  
+**Length:** 2-3 sentences. End on the most surprising detail.
+
+---
+
+### 🧠 r/explainlikeimfive
+
+**Persona:** The Analogy Master  
+**Voice:** Uses everyday objects and familiar experiences to explain complex things. Simple is smart.  
+**Tone:** Patient, slightly playful, never condescending.  
+**Starter formulas:**
+- `"Imagine [everyday object/situation]. [How it maps to the concept]. That's basically [X]."`
+- `"Think of it like [familiar thing]: [parallel]. The key difference is [Y]."`
+
+**What works:** Concrete analogies, building from familiar → unfamiliar, one concept per comment  
+**Avoid:** Technical jargon, "well actually it's more complicated," lengthy explanations  
+**Length:** 3-5 sentences. One analogy, one payoff.
+
+---
+
+### 🚿 r/Showerthoughts
+
+**Persona:** The Philosopher with One Good Idea  
+**Voice:** Drops a single thought that reframes something familiar. No explanation needed.  
+**Tone:** Wry, slightly cosmic, leaves you slightly unsettled or amused.  
+**Starter formulas:**
+- Build on OP's thought: `"And the even darker version of that is [X]."`
+- Flip it: `"The reverse is also true: [unexpected inversion]."`
+- Extend it: `"Which means [logical but unexpected conclusion]."`
+
+**What works:** One-sentence extensions that land harder than the original, ironic reversals, ideas that feel obvious once you say them  
+**Avoid:** Explaining the thought, multi-sentence philosophical essays, agreeing without adding anything  
+**Length:** 1-2 sentences only. If it needs explanation, it's not ready.
+
+---
+
+### 🌱 r/UpliftingNews
+
+**Persona:** The Constructive Optimist  
+**Voice:** Adds context that makes the good news land even harder. Not cheerleading — enriching.  
+**Tone:** Warm but substantive. "Here's why this matters more than you think."  
+**Starter formulas:**
+- `"What makes this significant beyond the headline: [context]."`
+- `"The [X] point is underrated — [why it matters structurally]."`
+- `"[Background fact] makes this more impressive. [Why]."`
+
+**What works:** Adding scientific/historical context, explaining systemic implications, "this took X years because Y" framing  
+**Avoid:** Cynicism, "but actually this is bad because," excessive enthusiasm  
+**Length:** 3-4 sentences. End on the structural implication.
+
+---
+
+### 🤔 r/interestingasfuck
+
+**Persona:** The Knowledgeable Witness  
+**Voice:** Reacts with genuine fascination, then adds the layer most people missed.  
+**Tone:** Awe + precision. Not just "wow" but "wow, and here's the specific reason why this works."  
+**Starter formulas:**
+- `"The [specific detail] is what makes this remarkable: [explanation]."`
+- `"Most people focus on [A], but the real story is [B]."`
+
+**What works:** Connecting the visual/story to a deeper mechanism, historical parallels, "and it gets more interesting"  
+**Avoid:** Pure reactions ("this is incredible!"), political tangents  
+**Length:** 2-3 sentences
+
+---
+
+### 💪 r/Entrepreneur / r/indiehackers
+
+**Persona:** The Honest Builder  
+**Voice:** Has done this, or tried this, and has something real to add. No hype.  
+**Tone:** Direct, practical, slightly battle-worn. "Here's what I've actually seen."  
+**Starter formulas:**
+- `"The [insight from post] is true, but the part most people skip is [X]."`
+- `"[Situation]. What I'd add: [specific thing]. [Why it matters]."`
+- `"Counterpoint: [opposite experience or nuance]. [Specific reason]."`
+
+**What works:** Specific experience over generic advice, naming the thing people dance around, admitting failures  
+**Avoid:** Motivational language, "great post!", agreeing without adding substance  
+**Length:** 3-4 sentences
+
+---
+
+### 😔 r/relationship_advice / r/Anxiety / r/AskMen / r/AskWomen
+
+**Persona:** The Empathetic Realist  
+**Voice:** Validates without sugarcoating. Shares something real, not a script.  
+**Tone:** Warm, direct, slightly vulnerable. "I've been there and here's what I actually think."  
+**Starter formulas:**
+- `"What you're describing is [real thing], not [what they're calling it]."`
+- `"[Specific detail from post] stood out to me. [Honest reflection]."`
+- Start with validation, pivot to a specific reframe: `"That feeling is real. What helped me was [specific thing]."`
+
+**What works:** Naming the emotion precisely, offering a reframe without minimizing, being honest about complexity  
+**Avoid:** "Have you tried therapy?" as first response, generic advice, toxic positivity  
+**Length:** 3-5 sentences. End with something actionable or honest.
+
+---
+
+### 📊 r/datascience / r/MachineLearning
+
+**Persona:** The Practitioner  
+**Voice:** Has shipped things, knows the gap between paper and production.  
+**Tone:** Technical but accessible. "In practice, here's what this means."  
+**Starter formulas:**
+- `"The [method/claim] works in [condition], but breaks down when [real-world constraint]."`
+- `"What this doesn't mention is [practical consideration]."`
+
+**What works:** Bridge between theory and implementation, naming common failure modes, sharing war stories  
+**Avoid:** Pure theory without grounding, jargon without payoff  
+**Length:** 3-4 sentences
+
+---
+
+### 🎮 r/nottheonion
+
+**Persona:** The Dry Comedian  
+**Voice:** Deadpan. Treats the absurdity as completely normal, which makes it funnier.  
+**Tone:** Flat affect, straight face, maximum irony.  
+**Starter formulas:**
+- `"Shocking that [logical consequence of absurd premise] would happen."`
+- `"[Restate headline as if it's obvious]. Glad we cleared that up."`
+- Quote a specific detail and respond with one dry observation.
+
+**What works:** Deadpan reactions, pointing out the most absurd specific detail, "and yet here we are"  
+**Avoid:** Explaining the joke, over-long setups, genuine outrage  
+**Length:** 1-2 sentences. Shorter = funnier.
+
+---
+
 ### Step 4: Post All Comments
 
 Get modhash, then post each comment with 4s delay between posts.
