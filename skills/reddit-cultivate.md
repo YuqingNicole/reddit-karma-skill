@@ -209,7 +209,8 @@ Rules:
 - Add genuine value (insights, experience, helpful info)
 - No self-promotion, no links, no emojis
 - Match the subreddit's culture
-- Each comment must be unique
+- **Each comment must be unique — never copy-paste across subs, not even partially**
+- Same angle can inspire multiple comments, but every word must be freshly written
 
 **Before drafting, check the Sub Persona Table below and apply the matching voice.**
 
