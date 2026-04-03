@@ -149,14 +149,28 @@ Before drafting any comment for a subreddit, fetch its rules via the API. This c
 
 **Run this for each new sub before the first comment of the session.** For subs we've posted in before without issues, a quick check every 2 weeks is enough.
 
-### Step 2.7: Decide — Reply to Post or Reply to Top Comment?
+### Step 2.7: Decide — Which Comment Mode?
 
-Before drafting, choose your target. **Replying to a top comment is often better than replying to the post directly.**
+Three modes. Pick before drafting.
 
-| Target | When to use | `thing_id` prefix |
-|--------|------------|-------------------|
-| The post itself | Post has few comments (<20), or your reply adds a new angle | `t3_POSTID` |
-| Top comment | Post has many replies, top comment has 50+ score, you can add a layer to their point | `t1_COMMENTID` |
+| Mode | When to use | `thing_id` prefix |
+|------|------------|-------------------|
+| **Standard reply** | Post has few comments (<20), your reply adds a new angle | `t3_POSTID` |
+| **Top-comment reply** | Post is busy, top comment has 50+ score, you add a layer | `t1_COMMENTID` |
+| **Post-length comment** | You have something substantial to say — a story, data, a breakdown | `t3_POSTID` |
+
+**Post-length comments** deserve special attention. These are top-level comments that read like a mini-post: structured, complete, self-contained. They work best when:
+- The original post asks an open question ("what do you think about X?")
+- Your angle is genuinely different from existing comments
+- You have specific data, experience, or a counternarrative to share
+- The post is rising fast and early comments are still getting traction
+
+Format rules for post-length comments:
+- Still no headers or bullet lists (Reddit comment, not a blog post)
+- 4-8 sentences max — longer than standard but not an essay
+- Open with the strongest sentence (people skim)
+- End with a specific observation or question that invites response
+- Apply the same Randomness Engine — just Extended length mode
 
 **Why reply to top comments:**
 - Top comments already have traffic — your reply rides that flow
