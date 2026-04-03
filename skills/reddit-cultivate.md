@@ -176,6 +176,40 @@ Look for:
 - Score > 2 (some traction)
 - Questions you can answer or discussions with genuine insight
 
+### Step 2.5: Read Subreddit Rules (MANDATORY before posting)
+
+Before drafting any comment for a subreddit, fetch its rules via the API. This catches real-time restrictions that may differ from the static data in reddit-performance.md.
+
+```javascript
+// Fetch subreddit rules
+(async () => {
+    let resp = await fetch("/r/SUBREDDIT/about/rules.json", {credentials: "include"});
+    let data = await resp.json();
+    let rules = data.rules.map((r, i) => ({
+        n: i + 1,
+        title: r.short_name,
+        desc: r.description ? r.description.substring(0, 120) : ""
+    }));
+    // Also check if new accounts are restricted
+    let about = await fetch("/r/SUBREDDIT/about.json", {credentials: "include"}).then(r => r.json());
+    let restricted = about.data.restrict_posting || about.data.restrict_commenting;
+    document.title = "RULES:" + JSON.stringify({sub: "SUBREDDIT", restricted, rules});
+})();
+```
+
+**What to look for:**
+- `restrict_commenting: true` → new/low-karma accounts may be blocked silently
+- Rules mentioning "no self-promotion", "no links", "flair required" → adjust or skip
+- Rules about minimum account age or karma → note for future reference
+
+**Decision logic:**
+- If rules allow general discussion comments → proceed
+- If rules require flair on posts (not comments) → comments are usually still fine
+- If rules say "no accounts under X karma" or "no new accounts" → skip this sub today
+- If unsure → skip and note in session log
+
+**Run this for each new sub before the first comment of the session.** For subs we've posted in before without issues, a quick check every 2 weeks is enough.
+
 ### Step 3: Draft Comments
 
 Rules:
