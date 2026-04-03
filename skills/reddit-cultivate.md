@@ -149,6 +149,59 @@ Before drafting any comment for a subreddit, fetch its rules via the API. This c
 
 **Run this for each new sub before the first comment of the session.** For subs we've posted in before without issues, a quick check every 2 weeks is enough.
 
+### Step 2.7: Decide — Reply to Post or Reply to Top Comment?
+
+Before drafting, choose your target. **Replying to a top comment is often better than replying to the post directly.**
+
+| Target | When to use | `thing_id` prefix |
+|--------|------------|-------------------|
+| The post itself | Post has few comments (<20), or your reply adds a new angle | `t3_POSTID` |
+| Top comment | Post has many replies, top comment has 50+ score, you can add a layer to their point | `t1_COMMENTID` |
+
+**Why reply to top comments:**
+- Top comments already have traffic — your reply rides that flow
+- Visibility window is longer (people keep reading top threads)
+- Less competition than the post-level thread
+- A good reply to a 500-score comment can itself hit 50-100 karma
+
+**How to fetch top comments of a post:**
+
+```javascript
+// Get top 5 comments for post ID 1saopui
+(function(){
+    fetch("/r/AskReddit/comments/1saopui.json?limit=5&sort=top", {credentials: "include"})
+    .then(r => r.json())
+    .then(d => {
+        var top = d[1].data.children.slice(0,5).map(c => ({
+            id: c.data.name,          // e.g. "t1_odxcy8t" — use this as thing_id
+            author: c.data.author,
+            score: c.data.score,
+            body: c.data.body ? c.data.body.substring(0, 100) : "[deleted]"
+        }));
+        document.title = "TOPCOMMENTS:" + JSON.stringify(top);
+    });
+})()
+```
+
+**Selection criteria for a top comment to reply to:**
+- Score > 50 (has traffic)
+- Body is a personal experience or statement (easier to extend)
+- Not already flooded with replies (< 10 replies on that comment)
+- Something you can genuinely add to — a second layer, a counterpoint, a specific detail
+
+**Posting to a comment (not the post):**
+```javascript
+// Same /api/comment endpoint, just change thing_id from t3_ to t1_
+var body = new URLSearchParams({
+    thing_id: "t1_odxcy8t",  // ← t1_ prefix = replying to a comment
+    text: "Your reply here",
+    uh: modhash,
+    api_type: "json"
+});
+```
+
+---
+
 ### Step 3: Draft Comments
 
 Rules:
