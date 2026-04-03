@@ -277,3 +277,91 @@ This pattern works for any site Chrome is logged into:
 5. Close tab when done
 
 Works for: Reddit, Twitter/X, LinkedIn, GitHub, any web app with a JSON API.
+
+---
+
+## Alternative Approaches (Tested 2026-04-03)
+
+### undetected-chromedriver (Python)
+
+**What it is:** ChromeDriver with `navigator.webdriver` patched — bypasses basic bot detection.
+
+**Test result:**
+- ✅ Installs and launches correctly on macOS (Chrome 146 + uc 3.5.5)
+- ✅ `navigator.webdriver` returns `None` (detection bypassed)
+- ❌ **Fatal limitation:** Launches a fresh Chrome instance with no existing session cookies
+- ❌ Cannot share login state with your already-open Chrome without closing it first
+- ❌ Using `--user-data-dir` to share profile causes lock conflict if Chrome is already running
+
+**Verdict:** Only viable if you maintain a **dedicated Chrome profile exclusively for automation** (never open it manually). Too much friction for daily use. Useful as a fallback on Windows/Linux where AppleScript is unavailable.
+
+**Setup if you need it:**
+```python
+import undetected_chromedriver as uc
+
+options = uc.ChromeOptions()
+options.add_argument("--no-sandbox")
+options.add_argument("--proxy-server=http://127.0.0.1:7890")  # adjust for your proxy
+# Use a dedicated profile dir (not your main Chrome profile)
+options.add_argument("--user-data-dir=/path/to/dedicated/chrome/profile")
+
+driver = uc.Chrome(options=options, headless=False, version_main=146)
+driver.get("https://www.reddit.com")
+# Log in manually on first run, then sessions will persist
+```
+
+---
+
+### MoreLogin (Anti-Detection Browser)
+
+**What it is:** A separate browser app that creates isolated profiles, each with unique Canvas fingerprint, WebGL, fonts, UA, timezone. Exposes a local API at `http://127.0.0.1:40000`.
+
+**Architecture:**
+```
+Python/Node → MoreLogin Local API (port 40000) → start profile → get debug port → Selenium/Playwright connects
+```
+
+**Key API calls:**
+```bash
+# List profiles
+curl -X POST http://127.0.0.1:40000/api/env/page \
+  -H "Content-Type: application/json" \
+  -d '{"pageNo": 1, "pageSize": 10}'
+
+# Start a profile — returns debugPort for Selenium
+curl -X POST http://127.0.0.1:40000/api/env/start \
+  -H "Content-Type: application/json" \
+  -d '{"envId": "YOUR_ENV_ID"}'
+# Returns: {"debugPort": 9222, "webdriver": "/path/to/chromedriver"}
+
+# Connect Selenium to running profile
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+driver = webdriver.Chrome(executable_path="/path/to/chromedriver", options=options)
+# Now drive the logged-in MoreLogin profile
+```
+
+**Test result:** Not tested live (requires MoreLogin app installed + account). API pattern confirmed from official docs.
+
+**Verdict:**
+- ✅ Best option for **multi-account matrix** (each profile has different fingerprint + IP)
+- ✅ Profiles persist login state — reconnect without re-logging in
+- ✅ Selenium connects to running profile (same pattern as `--remote-debugging-port`)
+- ❌ Overkill for single-account use — adds dependency on MoreLogin app running
+- ❌ Not free at scale (paid tiers for multiple profiles)
+
+**When to use:** When you need 3+ Reddit accounts, each with isolated identity. Current stage (single account): skip.
+
+---
+
+### Comparison Table
+
+| Method | macOS | Win/Linux | Shares login | Multi-account | Complexity | Reddit safety |
+|--------|-------|-----------|-------------|---------------|------------|--------------|
+| **AppleScript** (current) | ✅ | ❌ | ✅ native | ❌ | Low | ✅ Highest |
+| **undetected-chromedriver** | ✅ | ✅ | ⚠️ dedicated profile | ❌ | Medium | ⚠️ Medium |
+| **MoreLogin + Selenium** | ✅ | ✅ | ✅ per profile | ✅ | High | ✅ High |
+| **Playwright + stealth** | ✅ | ✅ | ❌ | ❌ | Medium | ❌ Detected |
