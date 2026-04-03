@@ -202,25 +202,25 @@ SaaS 的爆款几乎都带具体数字：
 
 ### 3.3 不同产品的推广公式
 
-#### deckcleaner.xyz
+#### your-product-1.com
 
 **目标 sub：** r/SideProject、r/productivity、r/googleslides 或 r/education
 
 **标题模板：**
-> *"NotebookLM kept watermarking my PDFs. Spent a weekend removing it in the browser — no uploads, no server, just your local machine"*
+> *"YourTool kept watermarking my PDFs. Spent a weekend removing it in the browser — no uploads, no server, just your local machine"*
 
 **正文结构：**
-1. 痛点：用 NotebookLM 做演示，每次导出都有水印，想去掉需要付费或用不靠谱的第三方工具
+1. 痛点：用 YourTool 做演示，每次导出都有水印，想去掉需要付费或用不靠谱的第三方工具
 2. 过程：研究 PDF 结构，发现可以在浏览器里处理，不需要上传到服务器
 3. 结果：做了这个工具，免费，纯本地处理，没有隐私问题
-4. 链接：deckcleaner.xyz
+4. 链接：your-product-1.com
 5. 最后加：*"looking for feedback"*（开放反馈更友好）
 
-**关键词加持：** 在标题/正文自然带入 `NotebookLM` `watermark` `PDF` `free` `no upload` `privacy`
+**关键词加持：** 在标题/正文自然带入 `YourTool` `watermark` `PDF` `free` `no upload` `privacy`
 
 ---
 
-#### linkertube.com
+#### your-product-2.com
 
 **目标 sub：** r/languagelearning（1400万订阅）、r/EnglishLearning（220万）、r/YoutubeChannels
 
@@ -269,8 +269,8 @@ SaaS 的爆款几乎都带具体数字：
 
 | 产品 | 准备度 | 建议时机 | 目标 sub |
 |------|--------|---------|---------|
-| deckcleaner.xyz | ✅ 随时可发 | 现在 | r/SideProject |
-| linkertube.com | ✅ 随时可发 | 现在 | r/languagelearning |
+| your-product-1.com | ✅ 随时可发 | 现在 | r/SideProject |
+| your-product-2.com | ✅ 随时可发 | 现在 | r/languagelearning |
 | 两者 | ⚠️ 建议先在目标 sub 发 1-2 条评论热身 | 1-2天内 | 各自目标 sub |
 
 ---
@@ -421,7 +421,7 @@ SaaS 的爆款几乎都带具体数字：
 ```javascript
 // 获取最近 25 条评论的得分情况
 (async () => {
-    let resp = await fetch("/user/Puzzled-Hedgehog4984/comments.json?limit=25", {credentials: "include"});
+    let resp = await fetch("/user/YOUR_REDDIT_USERNAME/comments.json?limit=25", {credentials: "include"});
     let data = await resp.json();
     let comments = data.data.children.map(c => ({
         sub: c.data.subreddit,
@@ -492,7 +492,7 @@ SaaS 的爆款几乎都带具体数字：
 
 | Sub | 订阅量 | 适合度 | 备注 |
 |-----|--------|--------|------|
-| r/languagelearning | 334万 | ⭐⭐⭐ | 语言学习工具，linkertube 首选 |
+| r/languagelearning | 334万 | ⭐⭐⭐ | 语言学习工具，your-product-2 首选 |
 | r/ObsidianMD | 30万 | ⭐⭐ | 知识管理工具 |
 | r/Notion | 45万 | ⭐⭐ | 效率工具 |
 | r/PKMS | 6.6万 | ⭐⭐ | 个人知识管理 |
