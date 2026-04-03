@@ -11,6 +11,7 @@ Three skills for building Reddit presence without API tokens or detectable autom
 
 | Skill | Trigger | File |
 |-------|---------|------|
+| **browser-control** | (shared layer, load when doing any browser automation) | [skills/browser-control.md](skills/browser-control.md) |
 | **reddit-cultivate** | `/reddit-cultivate`, "check my reddit", "find reddit opportunities" | [skills/reddit-cultivate.md](skills/reddit-cultivate.md) |
 | **reddit-post** | "post to reddit", "share on reddit", "reddit post" | [skills/reddit-post.md](skills/reddit-post.md) |
 | **reddit-performance** | "reddit performance", "subreddit ROI", "karma analysis" | [skills/reddit-performance.md](skills/reddit-performance.md) |
@@ -18,10 +19,10 @@ Three skills for building Reddit presence without API tokens or detectable autom
 ## How It Works
 
 ```
-Claude Code → osascript → Chrome (real browser, logged in) → Reddit
+Claude Code → osascript (browser-control.md) → Chrome (real browser, logged in) → Reddit
 ```
 
-AppleScript controls the user's real Chrome — undetectable by Reddit's anti-bot systems. All skills share this mechanism. See `reddit-cultivate.md` for full Method 1 vs Method 2 detection.
+AppleScript controls the user's real Chrome — undetectable by Reddit's anti-bot systems. Browser operations are in `browser-control.md` (shared across all skills). Reddit-specific logic lives in each skill file.
 
 ## Rate Limits (Cross-Skill)
 
