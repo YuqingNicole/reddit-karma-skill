@@ -11,6 +11,29 @@
 | 📝 Reddit Post | 用真实 Chrome 发帖到任意 subreddit，支持文字/链接帖 | [skills/reddit-post.md](skills/reddit-post.md) |
 | 📈 Reddit Cultivate | 自动找热帖发评论，AppleScript 方案，绕过反爬 | [skills/reddit-cultivate.md](skills/reddit-cultivate.md) |
 | 📊 Reddit Performance | 基于真实数据的 subreddit 表现复盘 + 选帖策略 | [skills/reddit-performance.md](skills/reddit-performance.md) |
+| 🖥️ Backend CLI | 把上面三个 skill 的操作固化成命令行工具，同样走真实 Chrome，自带限流 + 发帖预览 | [cli/README.md](cli/README.md) |
+
+---
+
+## 后端 CLI（cli/reddit_cli.py）
+
+不想每次手动拼 `osascript`？用命令行工具，一条命令搞定。macOS + 已登录 Reddit 的 Chrome，纯 Python 标准库，无需 API token：
+
+```bash
+chmod +x cli/reddit_cli.py
+ln -sf "$PWD/cli/reddit_cli.py" /usr/local/bin/reddit-cli   # 可选：加入 PATH
+
+reddit-cli karma                                  # 查 karma + 登录检查
+reddit-cli scan AskReddit --sort rising --limit 10 # 扫热帖（带 t3_ id）
+reddit-cli rules AskReddit                        # 看发帖限制
+reddit-cli top AskReddit 1saopui                  # 热评（带 t1_ id）
+reddit-cli comment t3_POSTID "评论内容" --yes       # 发评论（默认先预览确认）
+reddit-cli post SideProject --title "标题" --text "正文" --yes
+reddit-cli inbox                                  # 回复通知
+reddit-cli roi --limit 100                        # 各 sub ROI 复盘
+```
+
+限流内置：每天最多 15 条评论 / 1 条跨 sub 帖，评论间隔 ≥2s、发帖间隔 ≥4s，状态存在 `~/.reddit-cli/state.json`。写操作(comment/post)默认先打印预览再确认，非交互环境需显式 `--yes`。详见 [cli/README.md](cli/README.md)。
 
 ---
 
