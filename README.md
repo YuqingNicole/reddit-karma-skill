@@ -15,6 +15,16 @@
 
 ---
 
+## 合规版 Web 产品（web/ · autoreddit.ai）
+
+`web/` 是一个 Next.js 全栈脚手架,面向 **autoreddit.ai** 的合规版产品:发帖排期、收件箱管理、AI 起草助手——**全部走 Reddit 官方 API(OAuth)、公开披露自动化、发帖前需人工确认**,并内置 Stripe 订阅付费墙。
+
+> 注意:`web/` 刻意**不**复用 `cli/` 里那套 AppleScript/Chrome 引擎(那套是驱动真实浏览器、设计上不可检测,仅供个人自用)。产品版只用官方 API。两者请勿混用。
+
+上手:`cd web && cp .env.example .env.local && npm install && npm run dev`。详见 [web/README.md](web/README.md)。
+
+---
+
 ## 后端 CLI（cli/reddit_cli.py）
 
 不想每次手动拼 `osascript`？用命令行工具，一条命令搞定。macOS + 已登录 Reddit 的 Chrome，纯 Python 标准库，无需 API token：
