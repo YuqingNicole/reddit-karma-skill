@@ -71,6 +71,35 @@ command = "python3"
 args = ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]
 ```
 
+**OpenClaw** — add to `~/.openclaw/openclaw.json` under `mcp.servers`
+(verify with `openclaw mcp doctor reddit-karma --probe`):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "reddit-karma": {
+        "command": "python3",
+        "args": ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]
+      }
+    }
+  }
+}
+```
+
+**Hermes** — add to `~/.hermes/config.yaml` under `mcp_servers`
+(verify with `hermes mcp test reddit-karma`):
+
+```yaml
+mcp_servers:
+  reddit-karma:
+    command: "python3"
+    args: ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]
+```
+
+Ready-to-copy versions of all of these live in
+[`cli/agent-configs/`](agent-configs/).
+
 **Any other MCP client** — register this stdio command:
 
 ```

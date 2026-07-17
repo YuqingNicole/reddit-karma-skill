@@ -1,0 +1,17 @@
+# Sample Hermes MCP registration.
+# Merge this mcp_servers entry into your Hermes config.yaml
+#   (~/.hermes/config.yaml, or ~/.hermes/hermes-agent/config.yaml on some builds).
+# Replace the absolute path. Reload with /reload-mcp or verify with:
+#   hermes mcp test reddit-karma
+mcp_servers:
+  reddit-karma:
+    command: "python3"
+    args:
+      - "/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"
+    # Optional: expose only some tools (field names per your Hermes version's docs).
+    # tools:
+    #   include:
+    #     - reddit_karma
+    #     - reddit_scan
+    #     - reddit_suggest
+    #     - reddit_comment

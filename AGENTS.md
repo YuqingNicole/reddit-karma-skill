@@ -34,7 +34,9 @@ If you are an MCP-capable agent, use the **`reddit-karma` MCP server**
 | `reddit_comment` | post a comment (**needs `confirm: true`**) |
 | `reddit_post` | submit a post (**needs `confirm: true`**) |
 
-Registration snippets are in [`cli/README.md`](cli/README.md#agent-integration-mcp).
+Ready-to-copy registration snippets for Claude Code, Codex, OpenClaw and Hermes
+are in [`cli/agent-configs/`](cli/agent-configs/); the how-to is in
+[`cli/README.md`](cli/README.md#agent-integration-mcp).
 
 If you cannot use MCP, call the CLI instead — same operations, `--json` on all
 read commands. See [`cli/README.md`](cli/README.md).

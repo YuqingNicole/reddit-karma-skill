@@ -1,0 +1,11 @@
+{
+  "_comment": "Sample OpenClaw MCP registration. Merge the mcp.servers entry into your ~/.openclaw/openclaw.json. Replace the absolute path. Verify with: openclaw mcp doctor reddit-karma --probe",
+  "mcp": {
+    "servers": {
+      "reddit-karma": {
+        "command": "python3",
+        "args": ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]
+      }
+    }
+  }
+}
