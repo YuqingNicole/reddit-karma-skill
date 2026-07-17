@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "reddit-karma": {
+      "command": "python3",
+      "args": ["cli/reddit_mcp.py"],
+      "env": {}
+    }
+  }
+}

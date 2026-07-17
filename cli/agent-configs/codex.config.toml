@@ -1,0 +1,5 @@
+# Sample Codex MCP registration.
+# Merge into ~/.codex/config.toml. Replace the absolute path.
+[mcp_servers.reddit-karma]
+command = "python3"
+args = ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]

@@ -24,6 +24,22 @@ Claude Code → osascript (browser-control.md) → Chrome (real browser, logged 
 
 AppleScript controls the user's real Chrome — undetectable by Reddit's anti-bot systems. Browser operations are in `browser-control.md` (shared across all skills). Reddit-specific logic lives in each skill file.
 
+## Backend CLI
+
+For scripted or repeatable operations, the same logic is packaged as a command-line tool: [`cli/reddit_cli.py`](cli/reddit_cli.py) (see [cli/README.md](cli/README.md)). It uses the identical AppleScript → Chrome engine, adds shared rate limiting and a dry-run gate on writes, and needs no API tokens or dependencies (Python 3 stdlib, macOS only).
+
+```bash
+reddit-cli karma                                  # login check + karma
+reddit-cli scan AskReddit --sort rising --limit 10
+reddit-cli rules AskReddit                        # posting restrictions
+reddit-cli comment t3_POSTID "your comment" --yes
+reddit-cli post SideProject --title "..." --text "..." --yes
+reddit-cli inbox                                  # reply notifications
+reddit-cli roi --limit 100                        # subreddit ROI review
+```
+
+Prefer the CLI when you want one deterministic command instead of hand-assembling `osascript` calls; fall back to the raw `browser-control.md` methods for anything the CLI doesn't cover.
+
 ## Rate Limits (Cross-Skill)
 
 Track daily usage across all three skills to avoid triggering Reddit spam detection:
