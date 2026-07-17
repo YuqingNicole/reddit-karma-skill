@@ -51,6 +51,12 @@ PAGE_LOAD_TIMEOUT_S = 15
 
 REDDIT_URL = "https://www.reddit.com"
 
+# Default high-ROI comment targets (from reddit-performance.md) for `suggest`.
+TARGET_SUBS = [
+    "AskReddit", "todayilearned", "technology", "explainlikeimfive",
+    "Showerthoughts", "interestingasfuck",
+]
+
 _marker_counter = 0
 
 
@@ -280,6 +286,70 @@ def op_scan(sub, sort, limit):
     return _run_js_result(body)
 
 
+def op_multiscan(subs, sort, limit):
+    """Scan several subreddits in a single browser round-trip (parallel fetch)."""
+    subs_js = json.dumps(list(subs))
+    body = (
+        'const subs = %s;\n'
+        'const now = Date.now()/1000;\n'
+        'const results = await Promise.all(subs.map(s =>\n'
+        '  fetch("/r/"+s+"/%s.json?limit=%d",{credentials:"include"})\n'
+        '    .then(r=>r.json())\n'
+        '    .then(j=>({sub:s, posts:(j.data.children||[]).map(c=>({id:c.data.name, '
+        'score:c.data.score, comments:c.data.num_comments, '
+        'age_h:(now-c.data.created_utc)/3600, title:c.data.title, '
+        'sub:c.data.subreddit, permalink:"https://www.reddit.com"+c.data.permalink}))}))\n'
+        '    .catch(e=>({sub:s, posts:[], error:String(e)}))\n'
+        '));\n'
+        'return results;' % (subs_js, sort, limit))
+    return _run_js_result(body)
+
+
+def op_profile():
+    """Joined subreddits, largest first — the interest map from cultivate Step 0."""
+    return _run_js_result(
+        'const r = await fetch("/subreddits/mine/subscriber.json?limit=100",'
+        '{credentials:"include"}).then(x=>x.json());\n'
+        'if(!r||!r.data) return {__error:"could not read subscriptions (login?)"};\n'
+        'return (r.data.children||[]).filter(s=>!s.data.display_name.startsWith("u_"))'
+        '.map(s=>({name:s.data.display_name, subscribers:s.data.subscribers}))'
+        '.sort((a,b)=>b.subscribers-a.subscribers);')
+
+
+def filter_posts(posts, min_score=None, max_comments=None, max_age=None):
+    """Apply the doc's 选帖标准 thresholds. None = ignore that criterion."""
+    out = []
+    for p in posts:
+        if min_score is not None and (p.get("score") or 0) < min_score:
+            continue
+        if max_comments is not None and (p.get("comments") or 0) > max_comments:
+            continue
+        if max_age is not None and (p.get("age_h") or 0) > max_age:
+            continue
+        out.append(p)
+    return out
+
+
+def rank_opportunities(results, min_score, max_comments, max_age, top):
+    """Flatten multiscan results into a ranked comment-opportunity list.
+
+    Opportunity heuristic favours early traction that isn't yet saturated:
+    score per (comments + 3). Shared by `suggest` (CLI) and reddit_suggest (MCP).
+    """
+    candidates = []
+    for entry in results:
+        for p in entry.get("posts", []):
+            candidates.append(dict(p))
+    candidates = filter_posts(candidates, min_score=min_score,
+                              max_comments=max_comments, max_age=max_age)
+    for p in candidates:
+        score = p.get("score") or 0
+        comments = p.get("comments") or 0
+        p["opportunity"] = round(score / (comments + 3.0), 2)
+    candidates.sort(key=lambda p: p["opportunity"], reverse=True)
+    return candidates[:top]
+
+
 def op_rules(sub):
     body = (
         'const rr = await fetch("/r/%s/about/rules.json",{credentials:"include"})'
@@ -433,6 +503,8 @@ def cmd_karma(args):
 
 def cmd_scan(args):
     posts = with_reddit_tab(lambda: op_scan(args.subreddit, args.sort, args.limit))
+    posts = filter_posts(posts, min_score=args.min_score,
+                         max_comments=args.max_comments, max_age=args.max_age)
     if args.json:
         print(json.dumps(posts, ensure_ascii=False))
         return
@@ -446,6 +518,49 @@ def cmd_scan(args):
         ("comments", "cmts", 5, None),
         ("age_h", "age(h)", 7, lambda v: "%.1f" % v if v is not None else ""),
         ("title", "title", 60, None),
+    ])
+
+
+def cmd_profile(args):
+    subs = with_reddit_tab(op_profile)
+    if args.json:
+        print(json.dumps(subs, ensure_ascii=False))
+        return
+    if not subs:
+        print("No subscriptions found (are you logged in?).")
+        return
+    print("Joined subreddits (%d), largest first:" % len(subs))
+    _print_table(subs, [
+        ("name", "subreddit", 30, lambda v: "r/" + v),
+        ("subscribers", "subscribers", 12, None),
+    ])
+
+
+def cmd_suggest(args):
+    subs = args.subs.split(",") if args.subs else TARGET_SUBS
+    subs = [s.strip().lstrip("r/") for s in subs if s.strip()]
+    results = with_reddit_tab(lambda: op_multiscan(subs, args.sort, args.limit))
+    candidates = rank_opportunities(
+        results, args.min_score, args.max_comments, args.max_age, args.top)
+    if args.json:
+        print(json.dumps(candidates, ensure_ascii=False))
+        return
+    errs = [e for e in results if e.get("error")]
+    for e in errs:
+        print("⚠ r/%s: %s" % (e["sub"], e["error"]), file=sys.stderr)
+    if not candidates:
+        print("No candidate posts matched the filters.")
+        return
+    print("Comment opportunities across %d subs (%s) — top %d:"
+          % (len(subs), args.sort, len(candidates)))
+    _print_table(candidates, [
+        ("sub", "sub", 18, lambda v: "r/" + v),
+        ("id", "id", 12, None),
+        ("opportunity", "opp", 5, None),
+        ("score", "score", 6, None),
+        ("comments", "cmts", 5, None),
+        ("age_h", "age(h)", 7, lambda v: "%.1f" % v if v is not None else ""),
+        ("title", "title", 48, None),
     ])
 
 
@@ -595,8 +710,28 @@ def build_parser():
     sp.add_argument("--sort", default="rising",
                     choices=["rising", "hot", "new", "top"])
     sp.add_argument("--limit", type=int, default=10)
+    sp.add_argument("--min-score", type=int, help="drop posts below this score")
+    sp.add_argument("--max-comments", type=int, help="drop posts above this comment count")
+    sp.add_argument("--max-age", type=float, help="drop posts older than N hours")
     add_json(sp)
     sp.set_defaults(func=cmd_scan)
+
+    sp = sub.add_parser("profile", help="list joined subreddits (interest map)")
+    add_json(sp)
+    sp.set_defaults(func=cmd_profile)
+
+    sp = sub.add_parser("suggest",
+                        help="rank comment opportunities across target subs")
+    sp.add_argument("--subs", help="comma-separated subs (default: high-ROI set)")
+    sp.add_argument("--sort", default="rising",
+                    choices=["rising", "hot", "new"])
+    sp.add_argument("--limit", type=int, default=15, help="posts fetched per sub")
+    sp.add_argument("--top", type=int, default=15, help="opportunities to return")
+    sp.add_argument("--min-score", type=int, default=2)
+    sp.add_argument("--max-comments", type=int, default=100)
+    sp.add_argument("--max-age", type=float, default=8.0)
+    add_json(sp)
+    sp.set_defaults(func=cmd_suggest)
 
     sp = sub.add_parser("rules", help="show a subreddit's rules + posting restrictions")
     sp.add_argument("subreddit")

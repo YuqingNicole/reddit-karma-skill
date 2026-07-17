@@ -32,7 +32,9 @@ ln -sf "$PWD/cli/reddit_cli.py" /usr/local/bin/reddit-cli
 | Command | What it does |
 |---------|--------------|
 | `karma` | Account name + total / comment / link karma (also a login check) |
-| `scan <sub> [--sort rising\|hot\|new\|top] [--limit N]` | List posts with `t3_` ids, score, comment count, age |
+| `profile` | Joined subreddits, largest first (interest map / cultivate Step 0) |
+| `scan <sub> [--sort rising\|hot\|new\|top] [--limit N] [--min-score N] [--max-comments N] [--max-age H]` | List posts with `t3_` ids, score, comment count, age; optional 选帖标准 filters |
+| `suggest [--subs a,b,c] [--sort] [--top N]` | Scan several subs in one round-trip and rank comment opportunities |
 | `rules <sub>` | Subreddit rules + `restrict_posting` / `restrict_commenting` flags |
 | `top <sub> <post_id> [--limit N]` | Top comments of a post, with `t1_` ids to reply to |
 | `comment <thing_id> <text> [--yes]` | Post a comment (`t3_` post or `t1_` comment) |
@@ -40,8 +42,56 @@ ln -sf "$PWD/cli/reddit_cli.py" /usr/local/bin/reddit-cli
 | `inbox [--limit N]` | Comment replies in your inbox |
 | `roi [--user U] [--limit N]` | Aggregate recent comment scores by subreddit |
 
-Add `--json` to any read command (`karma`, `scan`, `rules`, `top`, `inbox`,
-`roi`) for machine-readable output you can pipe into other tools.
+Add `--json` to any read command (`karma`, `profile`, `scan`, `suggest`,
+`rules`, `top`, `inbox`, `roi`) for machine-readable output you can pipe into
+other tools.
+
+## Agent integration (MCP)
+
+`cli/reddit_mcp.py` is a Model Context Protocol server exposing every operation
+above as a tool with a JSON schema, so an AI agent can call them natively
+instead of shelling out and parsing text. It speaks newline-delimited JSON-RPC
+2.0 over stdio — the standard MCP stdio transport — with **zero dependencies**.
+
+Because it is protocol-standard, **any MCP-capable client uses the same
+server**; only the registration file differs.
+
+**Claude Code** — project-scoped `.mcp.json` is already committed at the repo
+root, so it's picked up automatically. Or register it globally:
+
+```bash
+claude mcp add reddit-karma -- python3 /ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py
+```
+
+**Codex** — add to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.reddit-karma]
+command = "python3"
+args = ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]
+```
+
+**Any other MCP client** — register this stdio command:
+
+```
+command: python3
+args:    ["/ABS/PATH/reddit-karma-skill/cli/reddit_mcp.py"]
+```
+
+The server offers 10 tools: `reddit_karma`, `reddit_profile`, `reddit_scan`,
+`reddit_suggest`, `reddit_rules`, `reddit_top_comments`, `reddit_inbox`,
+`reddit_roi`, `reddit_comment`, `reddit_post`. The two write tools
+(`reddit_comment`, `reddit_post`) return a **preview** and send nothing unless
+called with `"confirm": true` — the MCP analogue of the CLI's `--yes` gate.
+
+Quick smoke test without an MCP client:
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | python3 cli/reddit_mcp.py
+```
 
 ## Examples
 
