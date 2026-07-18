@@ -9,8 +9,8 @@ import { getFreshAccessToken } from "@/lib/reddit-auth";
  * the official API too — you type it, you send it.
  */
 export default async function InboxPage() {
-  const gate = requirePaid();
-  const user = getCurrentUser();
+  const gate = await requirePaid();
+  const user = await getCurrentUser();
 
   let replies: Awaited<ReturnType<typeof getInbox>> = [];
   let loadError: string | null = null;

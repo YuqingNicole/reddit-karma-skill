@@ -12,8 +12,8 @@ const TABS = [
   { href: "/dashboard/drafts", label: "AI Drafts" },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const user = getCurrentUser();
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
   if (!user) redirect("/api/auth/reddit");
 
   return (

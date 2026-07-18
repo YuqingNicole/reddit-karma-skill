@@ -5,8 +5,8 @@ import { currentPlan } from "@/lib/subscription";
  * Overview. In production, read today's counts + connected-account karma from
  * your DB / the Reddit API. Values below are placeholders for the scaffold.
  */
-export default function DashboardOverview() {
-  const plan = currentPlan();
+export default async function DashboardOverview() {
+  const plan = await currentPlan();
   const usage = { comments: 4, posts: 1 }; // TODO: load real counts
 
   return (

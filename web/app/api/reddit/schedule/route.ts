@@ -10,11 +10,11 @@ import { POSTING_LIMITS } from "@/lib/compliance";
  * within rate limits. The user explicitly submitted it — the human-approval step.
  */
 export async function POST(req: NextRequest) {
-  const gate = requirePaid();
+  const gate = await requirePaid();
   if (!gate.ok) {
     return NextResponse.redirect(`${process.env.APP_URL}/pricing`, 303);
   }
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.redirect(`${process.env.APP_URL}/api/auth/reddit`, 303);
   }
@@ -36,11 +36,11 @@ export async function POST(req: NextRequest) {
   if (runAt < Date.now() - 60_000) {
     return NextResponse.redirect(`${process.env.APP_URL}/dashboard/schedule?error=past`, 303);
   }
-  if (countJobsForUser(user.id) >= POSTING_LIMITS.scheduledJobsPerAccount) {
+  if ((await countJobsForUser(user.id)) >= POSTING_LIMITS.scheduledJobsPerAccount) {
     return NextResponse.redirect(`${process.env.APP_URL}/dashboard/schedule?error=limit`, 303);
   }
 
-  createJob({
+  await createJob({
     userId: user.id,
     kind,
     subreddit,

@@ -21,17 +21,17 @@ export const PLANS = {
   },
 } as const;
 
-export function currentPlan(): Plan {
-  return getCurrentUser()?.plan ?? "free";
+export async function currentPlan(): Promise<Plan> {
+  return (await getCurrentUser())?.plan ?? "free";
 }
 
-export function hasActivePlan(): boolean {
-  return currentPlan() !== "free";
+export async function hasActivePlan(): Promise<boolean> {
+  return (await currentPlan()) !== "free";
 }
 
 /** Feature gate used by server components / route handlers. */
-export function requirePaid(): { ok: true } | { ok: false; reason: string } {
-  const user = getCurrentUser();
+export async function requirePaid(): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const user = await getCurrentUser();
   if (!user) {
     return { ok: false, reason: "Connect your Reddit account first." };
   }

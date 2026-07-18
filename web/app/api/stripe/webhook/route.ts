@@ -38,22 +38,22 @@ export async function POST(req: NextRequest) {
     case "checkout.session.completed": {
       const s = event.data.object as any;
       const user = s.client_reference_id
-        ? getUserByRedditUsername(s.client_reference_id)
+        ? await getUserByRedditUsername(s.client_reference_id)
         : null;
       if (user) {
-        if (s.customer) setStripeCustomer(user.id, s.customer as string);
-        setSubscription(user.id, planFrom(s.metadata?.plan), "active");
+        if (s.customer) await setStripeCustomer(user.id, s.customer as string);
+        await setSubscription(user.id, planFrom(s.metadata?.plan), "active");
       }
       break;
     }
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const sub = event.data.object as any;
-      const user = getUserByStripeCustomerId(sub.customer as string);
+      const user = await getUserByStripeCustomerId(sub.customer as string);
       if (user) {
         const active = sub.status === "active" || sub.status === "trialing";
         const plan = planFrom(sub.metadata?.plan ?? user.plan);
-        setSubscription(user.id, active ? plan : "free", sub.status);
+        await setSubscription(user.id, active ? plan : "free", sub.status);
       }
       break;
     }

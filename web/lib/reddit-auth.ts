@@ -21,7 +21,7 @@ export async function getFreshAccessToken(user: User): Promise<string | null> {
   try {
     const t = await refreshToken(user.reddit_refresh_token);
     const newExpiry = Date.now() + t.expires_in * 1000;
-    updateRedditTokens(user.id, {
+    await updateRedditTokens(user.id, {
       accessToken: t.access_token,
       refreshToken: t.refresh_token, // Reddit may or may not rotate it
       expiresAt: newExpiry,
