@@ -8,10 +8,10 @@ import { listJobsForUser, type Job } from "@/lib/repo";
  * scheduler sends it via the official API at the chosen time, within rate
  * limits. Nothing sends without this explicit human action.
  */
-export default function SchedulePage() {
-  const gate = requirePaid();
-  const user = getCurrentUser();
-  const jobs = gate.ok && user ? listJobsForUser(user.id, 25) : [];
+export default async function SchedulePage() {
+  const gate = await requirePaid();
+  const user = await getCurrentUser();
+  const jobs = gate.ok && user ? await listJobsForUser(user.id, 25) : [];
 
   return (
     <PaywallGate ok={gate.ok} reason={"reason" in gate ? gate.reason : undefined}>

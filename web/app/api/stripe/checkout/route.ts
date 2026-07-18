@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/session";
  * subscription can be tied to the DB user.
  */
 export async function POST(req: NextRequest) {
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.redirect(`${process.env.APP_URL}/api/auth/reddit`, 303);
   }

@@ -19,7 +19,7 @@ const SYSTEM = [
 ].join(" ");
 
 export async function POST(req: NextRequest) {
-  const gate = requirePaid();
+  const gate = await requirePaid();
   if (!gate.ok) {
     return NextResponse.json({ error: gate.reason }, { status: 402 });
   }

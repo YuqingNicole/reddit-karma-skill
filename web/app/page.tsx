@@ -18,8 +18,8 @@ const FEATURES = [
   },
 ];
 
-export default function Home() {
-  const authed = Boolean(getCurrentUser());
+export default async function Home() {
+  const authed = Boolean(await getCurrentUser());
   return (
     <main>
       <Nav authed={authed} />

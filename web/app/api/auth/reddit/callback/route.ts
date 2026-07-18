@@ -24,13 +24,13 @@ export async function GET(req: NextRequest) {
   try {
     const tokens = await exchangeCode(code);
     const me = await getMe(tokens.access_token);
-    const user = upsertUserWithRedditTokens({
+    const user = await upsertUserWithRedditTokens({
       redditUsername: me.name,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
       expiresAt: Date.now() + tokens.expires_in * 1000,
     });
-    startSession(user.id);
+    await startSession(user.id);
   } catch {
     return NextResponse.redirect(`${process.env.APP_URL}/?error=oauth_failed`);
   }

@@ -9,11 +9,11 @@ import { submitComment } from "@/lib/reddit";
  * nothing automated posts here.
  */
 export async function POST(req: NextRequest) {
-  const gate = requirePaid();
+  const gate = await requirePaid();
   if (!gate.ok) {
     return NextResponse.redirect(`${process.env.APP_URL}/pricing`, 303);
   }
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   const form = await req.formData();
   const thingId = String(form.get("thingId") ?? "");
   const text = String(form.get("text") ?? "").trim();

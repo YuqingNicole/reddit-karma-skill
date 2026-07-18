@@ -3,8 +3,8 @@ import { Footer } from "@/components/Footer";
 import { PLANS } from "@/lib/subscription";
 import { getCurrentUser } from "@/lib/session";
 
-export default function PricingPage() {
-  const authed = Boolean(getCurrentUser());
+export default async function PricingPage() {
+  const authed = Boolean(await getCurrentUser());
   const plans = [
     { id: "starter" as const, ...PLANS.starter },
     { id: "pro" as const, ...PLANS.pro, highlight: true },

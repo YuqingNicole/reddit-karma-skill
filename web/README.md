@@ -16,8 +16,9 @@ every post approved by a human.
 - Tailwind CSS
 - Reddit OAuth2 (official API) — `lib/reddit.ts`
 - Stripe subscriptions — `lib/stripe.ts`, `app/api/stripe/*`
-- SQLite persistence (better-sqlite3) — `lib/db.ts` (schema), `lib/repo.ts`
-  (the only module that touches the DB — swap it for Postgres in one place)
+- Postgres persistence (node-postgres) — `lib/db.ts` (pool + schema),
+  `lib/repo.ts` (the only module that touches the DB). Works with Vercel
+  Postgres, Neon, Supabase, or any Postgres.
 - Server-side sessions — opaque id in an httpOnly cookie (`lib/session.ts`),
   resolved to a user row in the DB; Reddit tokens + plan live in the DB, never
   the cookie
@@ -38,7 +39,7 @@ npm run typecheck            # optional: tsc --noEmit
 |------|-------|-------|
 | Reddit OAuth | `REDDIT_CLIENT_ID/SECRET`, `REDDIT_USER_AGENT` | Create a **web app** at reddit.com/prefs/apps; redirect URI = `$APP_URL/api/auth/reddit/callback`. Reddit requires the exact User-Agent format. |
 | Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` | Create two recurring prices; point a webhook at `/api/stripe/webhook`. |
-| Database | `DATABASE_PATH` | SQLite file (default `./data/autoreddit.db`); auto-created on first run. |
+| Database | `DATABASE_URL` (or `POSTGRES_URL`) | Postgres connection string. Use the **pooled** one on serverless. Schema auto-creates on first query. |
 | AI drafts | `ANTHROPIC_API_KEY` | Optional; without it the assistant returns a placeholder. |
 
 ## Routes
@@ -68,20 +69,23 @@ npm run typecheck            # optional: tsc --noEmit
 
 ## Persistence (`lib/db.ts`, `lib/repo.ts`)
 
-Reddit OAuth tokens and subscription state live in SQLite, not the cookie:
+Reddit OAuth tokens and subscription state live in **Postgres**, not the cookie:
 
 - `users` — reddit username, access/refresh tokens + expiry, stripe customer id,
   plan, subscription status.
 - `sessions` — opaque session id → user id, with an expiry (FK-cascades on user
   delete). The cookie holds only the session id.
+- `jobs` — scheduled posts (see below).
 
 Flow: Reddit login upserts the user + tokens and starts a session; the Stripe
 webhook is the source of truth for `plan` (keyed by reddit username on first
 checkout, by stripe customer id thereafter); expired Reddit tokens are refreshed
 and re-persisted automatically (`lib/reddit-auth.ts`).
 
-**Swap to Postgres** by reimplementing `lib/db.ts` + `lib/repo.ts` against your
-driver — nothing else touches the database.
+`lib/db.ts` holds a cached connection pool and creates the schema on first query
+(idempotent `CREATE TABLE IF NOT EXISTS`). `lib/repo.ts` is the only module that
+runs SQL — swap providers there. On serverless, use your provider's **pooled**
+connection string and keep `PG_POOL_MAX` small.
 
 ## Scheduler (`jobs` table + worker)
 
@@ -105,10 +109,26 @@ Scheduled posts are real jobs in the DB, sent by a dispatcher:
 Job lifecycle: `pending → processing → sent | failed`, or `pending → canceled`,
 with `deferred` re-queueing back to `pending`.
 
+## Deploy to Vercel
+
+1. **Root Directory = `web`.** This repo's root is not the app (the Next app
+   lives in `web/`). In the Vercel project: **Settings → Build & Deployment →
+   Root Directory → `web`.** Without this, the build fails with "no Next.js
+   version detected" — this is the #1 cause of failed deploys here.
+2. **Provision Postgres** (Vercel Postgres / Neon / Supabase) and set
+   `DATABASE_URL` to its **pooled** connection string. (SQLite can't run on
+   Vercel — the serverless filesystem is read-only except `/tmp`.)
+3. **Set env vars** (Project → Settings → Environment Variables): `APP_URL` (your
+   deployed URL), `REDDIT_CLIENT_ID/SECRET/USER_AGENT`, `STRIPE_*`, `CRON_SECRET`,
+   optional `ANTHROPIC_API_KEY`. Point the Reddit app's redirect URI and the
+   Stripe webhook at the deployed URL.
+4. **Scheduler** runs via Vercel Cron (`vercel.json`, every minute) — no separate
+   worker process. `npm run worker` is only for non-serverless hosts.
+
 ## What's still stubbed (finish before production)
 
-- **Token encryption at rest**: tokens are stored plaintext in SQLite for the
-  scaffold — encrypt them (or use a secrets manager) in production.
+- **Token encryption at rest**: tokens are stored plaintext for the scaffold —
+  encrypt them (or use a secrets manager) in production.
 - **Dashboard data**: overview counts are placeholders (the Schedule queue is
   real; wire the overview to `countSentSince` / `listJobsForUser`).
 - **Retries**: failed jobs stay `failed`; add backoff/retry off `attempts` if you

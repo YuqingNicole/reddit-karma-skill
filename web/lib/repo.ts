@@ -1,9 +1,10 @@
 /**
- * Repository layer — the only place that reads/writes user + session rows.
- * Swap the SQLite calls here for Postgres without touching the rest of the app.
+ * Repository layer — the only place that reads/writes user + session + job rows.
+ * All functions are async (Postgres). Swap the SQL here for another store
+ * without touching the rest of the app.
  */
 import crypto from "crypto";
-import { db } from "./db";
+import { query } from "./db";
 import type { Plan } from "./subscription";
 
 export interface User {
@@ -21,115 +22,110 @@ export interface User {
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
+async function one<T>(text: string, params: unknown[]): Promise<T | null> {
+  const rows = await query<T>(text, params);
+  return rows[0] ?? null;
+}
+
 // --- Users ----------------------------------------------------------------
 
-export function getUserById(id: string): User | null {
-  return (db().prepare("SELECT * FROM users WHERE id = ?").get(id) as User) ?? null;
+export function getUserById(id: string): Promise<User | null> {
+  return one<User>("SELECT * FROM users WHERE id = $1", [id]);
 }
 
-export function getUserByStripeCustomerId(customerId: string): User | null {
-  return (
-    (db().prepare("SELECT * FROM users WHERE stripe_customer_id = ?").get(customerId) as User) ??
-    null
-  );
+export function getUserByStripeCustomerId(customerId: string): Promise<User | null> {
+  return one<User>("SELECT * FROM users WHERE stripe_customer_id = $1", [customerId]);
 }
 
-export function getUserByRedditUsername(username: string): User | null {
-  return (
-    (db().prepare("SELECT * FROM users WHERE reddit_username = ?").get(username) as User) ?? null
-  );
+export function getUserByRedditUsername(username: string): Promise<User | null> {
+  return one<User>("SELECT * FROM users WHERE reddit_username = $1", [username]);
 }
 
-/**
- * Insert or update a user on Reddit login, persisting the OAuth tokens.
- * Returns the full user row.
- */
-export function upsertUserWithRedditTokens(input: {
+/** Insert or update a user on Reddit login, persisting the OAuth tokens. */
+export async function upsertUserWithRedditTokens(input: {
   redditUsername: string;
   accessToken: string;
   refreshToken?: string;
   expiresAt: number;
-}): User {
+}): Promise<User> {
   const now = Date.now();
-  const existing = getUserByRedditUsername(input.redditUsername);
-  if (existing) {
-    db()
-      .prepare(
-        `UPDATE users SET reddit_access_token = ?, reddit_refresh_token = COALESCE(?, reddit_refresh_token),
-         reddit_token_expires_at = ?, updated_at = ? WHERE id = ?`,
-      )
-      .run(input.accessToken, input.refreshToken ?? null, input.expiresAt, now, existing.id);
-    return getUserById(existing.id)!;
-  }
   const id = crypto.randomUUID();
-  db()
-    .prepare(
-      `INSERT INTO users (id, reddit_username, reddit_access_token, reddit_refresh_token,
-        reddit_token_expires_at, plan, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, 'free', ?, ?)`,
-    )
-    .run(
-      id,
-      input.redditUsername,
-      input.accessToken,
-      input.refreshToken ?? null,
-      input.expiresAt,
-      now,
-      now,
-    );
-  return getUserById(id)!;
+  const rows = await query<User>(
+    `INSERT INTO users (id, reddit_username, reddit_access_token, reddit_refresh_token,
+       reddit_token_expires_at, plan, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, 'free', $6, $6)
+     ON CONFLICT (reddit_username) DO UPDATE SET
+       reddit_access_token = EXCLUDED.reddit_access_token,
+       reddit_refresh_token = COALESCE(EXCLUDED.reddit_refresh_token, users.reddit_refresh_token),
+       reddit_token_expires_at = EXCLUDED.reddit_token_expires_at,
+       updated_at = EXCLUDED.updated_at
+     RETURNING *`,
+    [id, input.redditUsername, input.accessToken, input.refreshToken ?? null, input.expiresAt, now],
+  );
+  return rows[0];
 }
 
-export function updateRedditTokens(
+export async function updateRedditTokens(
   userId: string,
   tokens: { accessToken: string; refreshToken?: string; expiresAt: number },
-): void {
-  db()
-    .prepare(
-      `UPDATE users SET reddit_access_token = ?, reddit_refresh_token = COALESCE(?, reddit_refresh_token),
-       reddit_token_expires_at = ?, updated_at = ? WHERE id = ?`,
-    )
-    .run(tokens.accessToken, tokens.refreshToken ?? null, tokens.expiresAt, Date.now(), userId);
+): Promise<void> {
+  await query(
+    `UPDATE users SET reddit_access_token = $1,
+       reddit_refresh_token = COALESCE($2, reddit_refresh_token),
+       reddit_token_expires_at = $3, updated_at = $4 WHERE id = $5`,
+    [tokens.accessToken, tokens.refreshToken ?? null, tokens.expiresAt, Date.now(), userId],
+  );
 }
 
-export function setStripeCustomer(userId: string, customerId: string): void {
-  db()
-    .prepare("UPDATE users SET stripe_customer_id = ?, updated_at = ? WHERE id = ?")
-    .run(customerId, Date.now(), userId);
+export async function setStripeCustomer(userId: string, customerId: string): Promise<void> {
+  await query("UPDATE users SET stripe_customer_id = $1, updated_at = $2 WHERE id = $3", [
+    customerId,
+    Date.now(),
+    userId,
+  ]);
 }
 
 /** Set plan + subscription status. Used by the Stripe webhook. */
-export function setSubscription(userId: string, plan: Plan, status: string | null): void {
-  db()
-    .prepare("UPDATE users SET plan = ?, subscription_status = ?, updated_at = ? WHERE id = ?")
-    .run(plan, status, Date.now(), userId);
+export async function setSubscription(
+  userId: string,
+  plan: Plan,
+  status: string | null,
+): Promise<void> {
+  await query("UPDATE users SET plan = $1, subscription_status = $2, updated_at = $3 WHERE id = $4", [
+    plan,
+    status,
+    Date.now(),
+    userId,
+  ]);
 }
 
 // --- Sessions -------------------------------------------------------------
 
-export function createSession(userId: string): string {
+export async function createSession(userId: string): Promise<string> {
   const id = crypto.randomBytes(32).toString("base64url");
   const now = Date.now();
-  db()
-    .prepare("INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)")
-    .run(id, userId, now, now + SESSION_TTL_MS);
+  await query(
+    "INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES ($1, $2, $3, $4)",
+    [id, userId, now, now + SESSION_TTL_MS],
+  );
   return id;
 }
 
-export function getUserBySession(sessionId: string): User | null {
-  const row = db()
-    .prepare("SELECT user_id, expires_at FROM sessions WHERE id = ?")
-    .get(sessionId) as { user_id: string; expires_at: number } | undefined;
+export async function getUserBySession(sessionId: string): Promise<User | null> {
+  const row = await one<{ user_id: string; expires_at: number }>(
+    "SELECT user_id, expires_at FROM sessions WHERE id = $1",
+    [sessionId],
+  );
   if (!row) return null;
   if (row.expires_at < Date.now()) {
-    deleteSession(sessionId);
+    await deleteSession(sessionId);
     return null;
   }
   return getUserById(row.user_id);
 }
 
-export function deleteSession(sessionId: string): void {
-  db().prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
+export async function deleteSession(sessionId: string): Promise<void> {
+  await query("DELETE FROM sessions WHERE id = $1", [sessionId]);
 }
 
 // --- Scheduled jobs -------------------------------------------------------
@@ -144,7 +140,7 @@ export interface Job {
   title: string;
   body: string | null;
   url: string | null;
-  disclose: number; // 0 | 1
+  disclose: boolean;
   run_at: number;
   status: JobStatus;
   result_url: string | null;
@@ -154,13 +150,14 @@ export interface Job {
   updated_at: number;
 }
 
-export function countJobsForUser(userId: string): number {
-  return (
-    db().prepare("SELECT COUNT(*) AS c FROM jobs WHERE user_id = ?").get(userId) as { c: number }
-  ).c;
+export async function countJobsForUser(userId: string): Promise<number> {
+  const row = await one<{ c: string }>("SELECT COUNT(*)::int AS c FROM jobs WHERE user_id = $1", [
+    userId,
+  ]);
+  return Number(row?.c ?? 0);
 }
 
-export function createJob(input: {
+export async function createJob(input: {
   userId: string;
   kind: "self" | "link";
   subreddit: string;
@@ -169,16 +166,15 @@ export function createJob(input: {
   url?: string;
   disclose: boolean;
   runAt: number;
-}): Job {
+}): Promise<Job> {
   const id = crypto.randomUUID();
   const now = Date.now();
-  db()
-    .prepare(
-      `INSERT INTO jobs (id, user_id, kind, subreddit, title, body, url, disclose, run_at,
-        status, attempts, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
-    )
-    .run(
+  const rows = await query<Job>(
+    `INSERT INTO jobs (id, user_id, kind, subreddit, title, body, url, disclose, run_at,
+       status, attempts, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', 0, $10, $10)
+     RETURNING *`,
+    [
       id,
       input.userId,
       input.kind,
@@ -186,78 +182,76 @@ export function createJob(input: {
       input.title,
       input.body ?? null,
       input.url ?? null,
-      input.disclose ? 1 : 0,
+      input.disclose,
       input.runAt,
       now,
-      now,
-    );
-  return db().prepare("SELECT * FROM jobs WHERE id = ?").get(id) as Job;
+    ],
+  );
+  return rows[0];
 }
 
-export function listJobsForUser(userId: string, limit = 25): Job[] {
-  return db()
-    .prepare("SELECT * FROM jobs WHERE user_id = ? ORDER BY run_at DESC LIMIT ?")
-    .all(userId, limit) as Job[];
+export function listJobsForUser(userId: string, limit = 25): Promise<Job[]> {
+  return query<Job>("SELECT * FROM jobs WHERE user_id = $1 ORDER BY run_at DESC LIMIT $2", [
+    userId,
+    limit,
+  ]);
 }
 
 /** How many posts this user has sent since `sinceMs` (for the daily cap). */
-export function countSentSince(userId: string, sinceMs: number): number {
-  return (
-    db()
-      .prepare("SELECT COUNT(*) AS c FROM jobs WHERE user_id = ? AND status = 'sent' AND updated_at >= ?")
-      .get(userId, sinceMs) as { c: number }
-  ).c;
+export async function countSentSince(userId: string, sinceMs: number): Promise<number> {
+  const row = await one<{ c: string }>(
+    "SELECT COUNT(*)::int AS c FROM jobs WHERE user_id = $1 AND status = 'sent' AND updated_at >= $2",
+    [userId, sinceMs],
+  );
+  return Number(row?.c ?? 0);
 }
 
 /**
  * Atomically claim up to `limit` due, pending jobs by flipping them to
- * 'processing'. The transaction prevents two workers from grabbing the same job.
+ * 'processing'. FOR UPDATE SKIP LOCKED means two workers never grab the same
+ * job even under concurrency.
  */
-export function claimDueJobs(now: number, limit: number): Job[] {
-  const claim = db().transaction((n: number, lim: number) => {
-    const rows = db()
-      .prepare(
-        "SELECT id FROM jobs WHERE status = 'pending' AND run_at <= ? ORDER BY run_at ASC LIMIT ?",
-      )
-      .all(n, lim) as { id: string }[];
-    const upd = db().prepare(
-      "UPDATE jobs SET status = 'processing', attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = 'pending'",
-    );
-    const claimed: Job[] = [];
-    for (const { id } of rows) {
-      const info = upd.run(Date.now(), id);
-      if (info.changes === 1) {
-        claimed.push(db().prepare("SELECT * FROM jobs WHERE id = ?").get(id) as Job);
-      }
-    }
-    return claimed;
-  });
-  return claim(now, limit);
+export function claimDueJobs(now: number, limit: number): Promise<Job[]> {
+  return query<Job>(
+    `UPDATE jobs SET status = 'processing', attempts = attempts + 1, updated_at = $1
+     WHERE id IN (
+       SELECT id FROM jobs WHERE status = 'pending' AND run_at <= $2
+       ORDER BY run_at ASC LIMIT $3 FOR UPDATE SKIP LOCKED
+     )
+     RETURNING *`,
+    [Date.now(), now, limit],
+  );
 }
 
-export function markJobSent(id: string, resultUrl: string | null): void {
-  db()
-    .prepare("UPDATE jobs SET status = 'sent', result_url = ?, error = NULL, updated_at = ? WHERE id = ?")
-    .run(resultUrl, Date.now(), id);
+export async function markJobSent(id: string, resultUrl: string | null): Promise<void> {
+  await query(
+    "UPDATE jobs SET status = 'sent', result_url = $1, error = NULL, updated_at = $2 WHERE id = $3",
+    [resultUrl, Date.now(), id],
+  );
 }
 
-export function markJobFailed(id: string, error: string): void {
-  db()
-    .prepare("UPDATE jobs SET status = 'failed', error = ?, updated_at = ? WHERE id = ?")
-    .run(error.slice(0, 500), Date.now(), id);
+export async function markJobFailed(id: string, error: string): Promise<void> {
+  await query("UPDATE jobs SET status = 'failed', error = $1, updated_at = $2 WHERE id = $3", [
+    error.slice(0, 500),
+    Date.now(),
+    id,
+  ]);
 }
 
 /** Push a claimed job back to pending with a later run time (e.g. daily cap hit). */
-export function requeueJob(id: string, runAt: number): void {
-  db()
-    .prepare("UPDATE jobs SET status = 'pending', run_at = ?, updated_at = ? WHERE id = ?")
-    .run(runAt, Date.now(), id);
+export async function requeueJob(id: string, runAt: number): Promise<void> {
+  await query("UPDATE jobs SET status = 'pending', run_at = $1, updated_at = $2 WHERE id = $3", [
+    runAt,
+    Date.now(),
+    id,
+  ]);
 }
 
 /** Cancel a still-pending job the user owns. Returns true if one was canceled. */
-export function cancelJob(id: string, userId: string): boolean {
-  const info = db()
-    .prepare("UPDATE jobs SET status = 'canceled', updated_at = ? WHERE id = ? AND user_id = ? AND status = 'pending'")
-    .run(Date.now(), id, userId);
-  return info.changes === 1;
+export async function cancelJob(id: string, userId: string): Promise<boolean> {
+  const rows = await query<{ id: string }>(
+    "UPDATE jobs SET status = 'canceled', updated_at = $1 WHERE id = $2 AND user_id = $3 AND status = 'pending' RETURNING id",
+    [Date.now(), id, userId],
+  );
+  return rows.length === 1;
 }

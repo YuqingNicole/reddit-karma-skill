@@ -2,8 +2,8 @@ import { PaywallGate } from "@/components/PaywallGate";
 import { requirePaid } from "@/lib/subscription";
 import { DraftAssistant } from "./DraftAssistant";
 
-export default function DraftsPage() {
-  const gate = requirePaid();
+export default async function DraftsPage() {
+  const gate = await requirePaid();
   return (
     <PaywallGate ok={gate.ok} reason={"reason" in gate ? gate.reason : undefined}>
       <div className="space-y-4">
