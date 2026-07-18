@@ -125,14 +125,22 @@ with `deferred` re-queueing back to `pending`.
 4. **Scheduler** runs via Vercel Cron (`vercel.json`, every minute) — no separate
    worker process. `npm run worker` is only for non-serverless hosts.
 
-## What's still stubbed (finish before production)
+## Production hardening (done)
 
-- **Token encryption at rest**: tokens are stored plaintext for the scaffold —
-  encrypt them (or use a secrets manager) in production.
-- **Dashboard data**: overview counts are placeholders (the Schedule queue is
-  real; wire the overview to `countSentSince` / `listJobsForUser`).
-- **Retries**: failed jobs stay `failed`; add backoff/retry off `attempts` if you
-  want automatic re-tries.
+- **Token encryption at rest** — Reddit tokens are AES-256-GCM encrypted via
+  `lib/crypto.ts` when `TOKEN_ENC_KEY` is set (tagged `enc:v1:`; plaintext rows
+  still read, so the key can be added without a migration).
+- **Live dashboard** — the overview reads real counts (pending jobs, posts sent
+  today, unread replies) from the DB + official API.
+- **Retries with backoff** — transient send failures re-queue with exponential
+  backoff (1m, 4m, 9m…, capped 1h) up to 4 attempts, then fail terminally. A
+  missing token fails immediately (the user must reconnect).
+
+## Still worth doing before scale
+
+- Move the per-instance write limiter (`lib/reddit.ts`) to Redis if you run
+  multiple instances, so the Reddit rate budget is shared.
+- Add per-account audit logging of every posted action.
 
 ## Support
 
