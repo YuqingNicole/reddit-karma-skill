@@ -114,4 +114,8 @@ with `deferred` re-queueing back to `pending`.
 - **Retries**: failed jobs stay `failed`; add backoff/retry off `attempts` if you
   want automatic re-tries.
 
+## Support
+
+Questions or issues: email **support@autoreddit.ai** · WeChat **c1426217526**.
+
 ## Not affiliated with Reddit, Inc.

@@ -1,4 +1,5 @@
 import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
 import { PLANS } from "@/lib/subscription";
 import { getCurrentUser } from "@/lib/session";
 
@@ -48,6 +49,7 @@ export default function PricingPage() {
           </div>
         ))}
       </section>
+      <Footer />
     </main>
   );
 }

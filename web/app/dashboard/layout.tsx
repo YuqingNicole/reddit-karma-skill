@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { DisclosureBanner } from "@/components/DisclosureBanner";
+import { SUPPORT } from "@/components/Footer";
 import { getCurrentUser } from "@/lib/session";
 
 const TABS = [
@@ -43,6 +44,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {children}
+
+        <p className="pt-6 text-xs text-neutral-500">
+          Need help? Email{" "}
+          <a href={`mailto:${SUPPORT.email}`} className="text-brand hover:underline">
+            {SUPPORT.email}
+          </a>{" "}
+          · WeChat <span className="font-mono">{SUPPORT.wechat}</span>
+        </p>
       </div>
     </main>
   );

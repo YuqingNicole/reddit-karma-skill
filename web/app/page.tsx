@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
 import { getCurrentUser } from "@/lib/session";
 
 const FEATURES = [
@@ -77,9 +78,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="mx-auto max-w-5xl px-6 py-10 text-xs text-neutral-500">
-        © autoreddit.ai · Not affiliated with Reddit, Inc.
-      </footer>
+      <Footer />
     </main>
   );
 }
