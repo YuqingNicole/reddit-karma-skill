@@ -28,8 +28,27 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS jobs (
+  id           TEXT PRIMARY KEY,
+  user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind         TEXT NOT NULL,                       -- 'self' | 'link'
+  subreddit    TEXT NOT NULL,
+  title        TEXT NOT NULL,
+  body         TEXT,                                -- self-post text
+  url          TEXT,                                -- link-post url
+  disclose     INTEGER NOT NULL DEFAULT 1,
+  run_at       INTEGER NOT NULL,                    -- epoch ms
+  status       TEXT NOT NULL DEFAULT 'pending',     -- pending|processing|sent|failed|canceled
+  result_url   TEXT,
+  error        TEXT,
+  attempts     INTEGER NOT NULL DEFAULT 0,
+  created_at   INTEGER NOT NULL,
+  updated_at   INTEGER NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_stripe ON users(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_jobs_due ON jobs(status, run_at);
+CREATE INDEX IF NOT EXISTS idx_jobs_user ON jobs(user_id, created_at);
 `;
 
 // Reuse one connection across hot-reloads / route invocations in dev.

@@ -131,3 +131,133 @@ export function getUserBySession(sessionId: string): User | null {
 export function deleteSession(sessionId: string): void {
   db().prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
 }
+
+// --- Scheduled jobs -------------------------------------------------------
+
+export type JobStatus = "pending" | "processing" | "sent" | "failed" | "canceled";
+
+export interface Job {
+  id: string;
+  user_id: string;
+  kind: "self" | "link";
+  subreddit: string;
+  title: string;
+  body: string | null;
+  url: string | null;
+  disclose: number; // 0 | 1
+  run_at: number;
+  status: JobStatus;
+  result_url: string | null;
+  error: string | null;
+  attempts: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export function countJobsForUser(userId: string): number {
+  return (
+    db().prepare("SELECT COUNT(*) AS c FROM jobs WHERE user_id = ?").get(userId) as { c: number }
+  ).c;
+}
+
+export function createJob(input: {
+  userId: string;
+  kind: "self" | "link";
+  subreddit: string;
+  title: string;
+  body?: string;
+  url?: string;
+  disclose: boolean;
+  runAt: number;
+}): Job {
+  const id = crypto.randomUUID();
+  const now = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO jobs (id, user_id, kind, subreddit, title, body, url, disclose, run_at,
+        status, attempts, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
+    )
+    .run(
+      id,
+      input.userId,
+      input.kind,
+      input.subreddit,
+      input.title,
+      input.body ?? null,
+      input.url ?? null,
+      input.disclose ? 1 : 0,
+      input.runAt,
+      now,
+      now,
+    );
+  return db().prepare("SELECT * FROM jobs WHERE id = ?").get(id) as Job;
+}
+
+export function listJobsForUser(userId: string, limit = 25): Job[] {
+  return db()
+    .prepare("SELECT * FROM jobs WHERE user_id = ? ORDER BY run_at DESC LIMIT ?")
+    .all(userId, limit) as Job[];
+}
+
+/** How many posts this user has sent since `sinceMs` (for the daily cap). */
+export function countSentSince(userId: string, sinceMs: number): number {
+  return (
+    db()
+      .prepare("SELECT COUNT(*) AS c FROM jobs WHERE user_id = ? AND status = 'sent' AND updated_at >= ?")
+      .get(userId, sinceMs) as { c: number }
+  ).c;
+}
+
+/**
+ * Atomically claim up to `limit` due, pending jobs by flipping them to
+ * 'processing'. The transaction prevents two workers from grabbing the same job.
+ */
+export function claimDueJobs(now: number, limit: number): Job[] {
+  const claim = db().transaction((n: number, lim: number) => {
+    const rows = db()
+      .prepare(
+        "SELECT id FROM jobs WHERE status = 'pending' AND run_at <= ? ORDER BY run_at ASC LIMIT ?",
+      )
+      .all(n, lim) as { id: string }[];
+    const upd = db().prepare(
+      "UPDATE jobs SET status = 'processing', attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = 'pending'",
+    );
+    const claimed: Job[] = [];
+    for (const { id } of rows) {
+      const info = upd.run(Date.now(), id);
+      if (info.changes === 1) {
+        claimed.push(db().prepare("SELECT * FROM jobs WHERE id = ?").get(id) as Job);
+      }
+    }
+    return claimed;
+  });
+  return claim(now, limit);
+}
+
+export function markJobSent(id: string, resultUrl: string | null): void {
+  db()
+    .prepare("UPDATE jobs SET status = 'sent', result_url = ?, error = NULL, updated_at = ? WHERE id = ?")
+    .run(resultUrl, Date.now(), id);
+}
+
+export function markJobFailed(id: string, error: string): void {
+  db()
+    .prepare("UPDATE jobs SET status = 'failed', error = ?, updated_at = ? WHERE id = ?")
+    .run(error.slice(0, 500), Date.now(), id);
+}
+
+/** Push a claimed job back to pending with a later run time (e.g. daily cap hit). */
+export function requeueJob(id: string, runAt: number): void {
+  db()
+    .prepare("UPDATE jobs SET status = 'pending', run_at = ?, updated_at = ? WHERE id = ?")
+    .run(runAt, Date.now(), id);
+}
+
+/** Cancel a still-pending job the user owns. Returns true if one was canceled. */
+export function cancelJob(id: string, userId: string): boolean {
+  const info = db()
+    .prepare("UPDATE jobs SET status = 'canceled', updated_at = ? WHERE id = ? AND user_id = ? AND status = 'pending'")
+    .run(Date.now(), id, userId);
+  return info.changes === 1;
+}

@@ -1,13 +1,17 @@
 import { PaywallGate } from "@/components/PaywallGate";
 import { requirePaid } from "@/lib/subscription";
+import { getCurrentUser } from "@/lib/session";
+import { listJobsForUser, type Job } from "@/lib/repo";
 
 /**
- * Post scheduling. Submitting queues a job (POST /api/reddit/schedule); a
- * background worker sends it via the official API at the chosen time, within
- * rate limits. Nothing sends without this explicit human action.
+ * Post scheduling. Submitting queues a job (POST /api/reddit/schedule); the
+ * scheduler sends it via the official API at the chosen time, within rate
+ * limits. Nothing sends without this explicit human action.
  */
 export default function SchedulePage() {
   const gate = requirePaid();
+  const user = getCurrentUser();
+  const jobs = gate.ok && user ? listJobsForUser(user.id, 25) : [];
 
   return (
     <PaywallGate ok={gate.ok} reason={"reason" in gate ? gate.reason : undefined}>
@@ -20,11 +24,12 @@ export default function SchedulePage() {
             <label className="block text-sm font-medium">Body (self post)</label>
             <textarea
               name="text"
-              rows={6}
+              rows={5}
               className="mt-1 w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent p-2 text-sm"
-              placeholder="Markdown supported…"
+              placeholder="Markdown supported… (leave blank and fill URL below for a link post)"
             />
           </div>
+          <Field name="url" label="Link URL (for link posts)" placeholder="https://…" />
           <Field name="runAt" label="Send at" type="datetime-local" required />
           <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <input type="checkbox" name="disclose" defaultChecked />
@@ -37,14 +42,60 @@ export default function SchedulePage() {
 
         <div>
           <h2 className="font-semibold">Queue</h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            {/* TODO: load from DB */}
-            <QueueItem sub="SideProject" title="I shipped v2 of my tool" when="Today 21:00" />
-            <QueueItem sub="indiehackers" title="What I learned launching" when="Tomorrow 08:00" />
-          </ul>
+          {jobs.length === 0 ? (
+            <p className="mt-3 text-sm text-neutral-500">Nothing scheduled yet.</p>
+          ) : (
+            <ul className="mt-3 space-y-2 text-sm">
+              {jobs.map((j) => (
+                <QueueRow key={j.id} job={j} />
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </PaywallGate>
+  );
+}
+
+const STATUS_STYLE: Record<string, string> = {
+  pending: "text-amber-600",
+  processing: "text-blue-600",
+  sent: "text-green-600",
+  failed: "text-red-600",
+  canceled: "text-neutral-400 line-through",
+};
+
+function QueueRow({ job }: { job: Job }) {
+  return (
+    <li className="rounded-md border border-neutral-200 dark:border-neutral-800 px-3 py-2">
+      <div className="flex items-center justify-between">
+        <span className="truncate">
+          <span className="text-neutral-500">r/{job.subreddit}</span> · {job.title}
+        </span>
+        <span className={`ml-2 shrink-0 text-xs ${STATUS_STYLE[job.status] ?? ""}`}>
+          {job.status}
+        </span>
+      </div>
+      <div className="mt-1 flex items-center justify-between text-xs text-neutral-500">
+        <span>{new Date(job.run_at).toLocaleString()}</span>
+        {job.status === "pending" && (
+          <form action="/api/reddit/schedule/cancel" method="POST">
+            <input type="hidden" name="jobId" value={job.id} />
+            <button className="text-red-500 hover:underline">Cancel</button>
+          </form>
+        )}
+        {job.status === "sent" && job.result_url && (
+          <a href={job.result_url} className="text-brand hover:underline" target="_blank" rel="noreferrer">
+            view
+          </a>
+        )}
+        {job.status === "failed" && job.error && (
+          <span className="max-w-[50%] truncate text-red-500" title={job.error}>
+            {job.error}
+          </span>
+        )}
+      </div>
+    </li>
   );
 }
 
@@ -72,16 +123,5 @@ function Field({
         className="mt-1 w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent p-2 text-sm"
       />
     </div>
-  );
-}
-
-function QueueItem({ sub, title, when }: { sub: string; title: string; when: string }) {
-  return (
-    <li className="flex items-center justify-between rounded-md border border-neutral-200 dark:border-neutral-800 px-3 py-2">
-      <span>
-        <span className="text-neutral-500">r/{sub}</span> · {title}
-      </span>
-      <span className="text-xs text-neutral-500">{when}</span>
-    </li>
   );
 }

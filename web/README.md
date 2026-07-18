@@ -53,7 +53,8 @@ npm run typecheck            # optional: tsc --noEmit
 | `/dashboard/drafts` | AI draft → human edits → approve (paid) |
 | `/api/auth/reddit`, `/api/auth/reddit/callback` | OAuth flow |
 | `/api/stripe/checkout`, `/api/stripe/webhook` | Subscriptions |
-| `/api/reddit/schedule`, `/api/reddit/reply`, `/api/ai/draft` | Feature actions |
+| `/api/reddit/schedule`, `/api/reddit/schedule/cancel`, `/api/reddit/reply`, `/api/ai/draft` | Feature actions |
+| `/api/cron/dispatch` | Scheduler dispatch (cron / worker; `CRON_SECRET`) |
 
 ## Compliance model (`lib/compliance.ts`)
 
@@ -82,13 +83,35 @@ and re-persisted automatically (`lib/reddit-auth.ts`).
 **Swap to Postgres** by reimplementing `lib/db.ts` + `lib/repo.ts` against your
 driver — nothing else touches the database.
 
+## Scheduler (`jobs` table + worker)
+
+Scheduled posts are real jobs in the DB, sent by a dispatcher:
+
+- **Enqueue** — `POST /api/reddit/schedule` inserts a `pending` job (enforces the
+  per-account job cap); the Schedule tab lists your queue with live status and a
+  cancel button (`/api/reddit/schedule/cancel`).
+- **Dispatch** — `GET/POST /api/cron/dispatch` (protected by `CRON_SECRET`) runs
+  `runDueScheduledPosts()`: it **atomically claims** due jobs (`pending → processing`,
+  so two workers never grab the same job), sends each via the official API with a
+  fresh token, spaced by the write limiter, then marks `sent`/`failed`. If a
+  user hit the daily post cap, the job is **deferred** (re-queued +1h) instead of
+  over-posting.
+- **Drive it** one of two ways:
+  - **Vercel Cron** — `vercel.json` already schedules `/api/cron/dispatch` every
+    minute; Vercel injects the `CRON_SECRET` auth header automatically.
+  - **Self-hosted** — `npm run worker` (`worker/worker.mjs`) polls the dispatch
+    endpoint on an interval. Needs `CRON_SECRET` + `DISPATCH_URL`.
+
+Job lifecycle: `pending → processing → sent | failed`, or `pending → canceled`,
+with `deferred` re-queueing back to `pending`.
+
 ## What's still stubbed (finish before production)
 
-- **Scheduler worker**: `/api/reddit/schedule` validates + would enqueue jobs;
-  add a cron/queue worker that sends them at `runAt` via `submitPost`, honoring
-  rate limits. (A `jobs` table is the natural next migration.)
 - **Token encryption at rest**: tokens are stored plaintext in SQLite for the
   scaffold — encrypt them (or use a secrets manager) in production.
-- **Dashboard data**: overview counts and the queue list are placeholders.
+- **Dashboard data**: overview counts are placeholders (the Schedule queue is
+  real; wire the overview to `countSentSince` / `listJobsForUser`).
+- **Retries**: failed jobs stay `failed`; add backoff/retry off `attempts` if you
+  want automatic re-tries.
 
 ## Not affiliated with Reddit, Inc.
