@@ -5,6 +5,7 @@
  */
 import crypto from "crypto";
 import { query } from "./db";
+import { decryptToken, encryptToken } from "./crypto";
 import type { Plan } from "./subscription";
 
 export interface User {
@@ -27,18 +28,28 @@ async function one<T>(text: string, params: unknown[]): Promise<T | null> {
   return rows[0] ?? null;
 }
 
+/** Decrypt the token columns on a user row read from the DB. */
+function decodeUser(u: User | null): User | null {
+  if (!u) return null;
+  u.reddit_access_token = decryptToken(u.reddit_access_token);
+  u.reddit_refresh_token = decryptToken(u.reddit_refresh_token);
+  return u;
+}
+
 // --- Users ----------------------------------------------------------------
 
-export function getUserById(id: string): Promise<User | null> {
-  return one<User>("SELECT * FROM users WHERE id = $1", [id]);
+export async function getUserById(id: string): Promise<User | null> {
+  return decodeUser(await one<User>("SELECT * FROM users WHERE id = $1", [id]));
 }
 
-export function getUserByStripeCustomerId(customerId: string): Promise<User | null> {
-  return one<User>("SELECT * FROM users WHERE stripe_customer_id = $1", [customerId]);
+export async function getUserByStripeCustomerId(customerId: string): Promise<User | null> {
+  return decodeUser(
+    await one<User>("SELECT * FROM users WHERE stripe_customer_id = $1", [customerId]),
+  );
 }
 
-export function getUserByRedditUsername(username: string): Promise<User | null> {
-  return one<User>("SELECT * FROM users WHERE reddit_username = $1", [username]);
+export async function getUserByRedditUsername(username: string): Promise<User | null> {
+  return decodeUser(await one<User>("SELECT * FROM users WHERE reddit_username = $1", [username]));
 }
 
 /** Insert or update a user on Reddit login, persisting the OAuth tokens. */
@@ -60,9 +71,16 @@ export async function upsertUserWithRedditTokens(input: {
        reddit_token_expires_at = EXCLUDED.reddit_token_expires_at,
        updated_at = EXCLUDED.updated_at
      RETURNING *`,
-    [id, input.redditUsername, input.accessToken, input.refreshToken ?? null, input.expiresAt, now],
+    [
+      id,
+      input.redditUsername,
+      encryptToken(input.accessToken),
+      encryptToken(input.refreshToken ?? null),
+      input.expiresAt,
+      now,
+    ],
   );
-  return rows[0];
+  return decodeUser(rows[0])!;
 }
 
 export async function updateRedditTokens(
@@ -73,7 +91,13 @@ export async function updateRedditTokens(
     `UPDATE users SET reddit_access_token = $1,
        reddit_refresh_token = COALESCE($2, reddit_refresh_token),
        reddit_token_expires_at = $3, updated_at = $4 WHERE id = $5`,
-    [tokens.accessToken, tokens.refreshToken ?? null, tokens.expiresAt, Date.now(), userId],
+    [
+      encryptToken(tokens.accessToken),
+      encryptToken(tokens.refreshToken ?? null),
+      tokens.expiresAt,
+      Date.now(),
+      userId,
+    ],
   );
 }
 
@@ -195,6 +219,14 @@ export function listJobsForUser(userId: string, limit = 25): Promise<Job[]> {
     userId,
     limit,
   ]);
+}
+
+export async function countJobsByStatus(userId: string, status: JobStatus): Promise<number> {
+  const row = await one<{ c: string }>(
+    "SELECT COUNT(*)::int AS c FROM jobs WHERE user_id = $1 AND status = $2",
+    [userId, status],
+  );
+  return Number(row?.c ?? 0);
 }
 
 /** How many posts this user has sent since `sinceMs` (for the daily cap). */

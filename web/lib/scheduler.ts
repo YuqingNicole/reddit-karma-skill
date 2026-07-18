@@ -26,10 +26,27 @@ function startOfLocalDay(now: number): number {
   return d.getTime();
 }
 
+// Retry transient failures with exponential backoff, then give up.
+const MAX_ATTEMPTS = 4;
+function backoffMs(attempts: number): number {
+  // attempts is 1 on the first try; 1m, 4m, 9m, capped at 1h.
+  return Math.min(60_000 * attempts * attempts, 60 * 60_000);
+}
+
 export interface JobResult {
   id: string;
-  status: "sent" | "failed" | "deferred";
+  status: "sent" | "failed" | "retry" | "deferred";
   detail?: string;
+}
+
+/** Mark a job failed, or re-queue it for a later retry if attempts remain. */
+async function failOrRetry(job: Job, now: number, msg: string): Promise<JobResult> {
+  if (job.attempts < MAX_ATTEMPTS) {
+    await requeueJob(job.id, now + backoffMs(job.attempts));
+    return { id: job.id, status: "retry", detail: `attempt ${job.attempts}: ${msg}` };
+  }
+  await markJobFailed(job.id, msg);
+  return { id: job.id, status: "failed", detail: msg };
 }
 
 export async function runDueScheduledPosts(limit = 10): Promise<{
@@ -62,6 +79,7 @@ async function sendOne(job: Job, now: number): Promise<JobResult> {
 
   const token = await getFreshAccessToken(user);
   if (!token) {
+    // Not retriable — the user has to reconnect Reddit. Fail terminally.
     await markJobFailed(job.id, "no valid Reddit token — user must reconnect");
     return { id: job.id, status: "failed", detail: "no token" };
   }
@@ -75,15 +93,11 @@ async function sendOne(job: Job, now: number): Promise<JobResult> {
       disclose: job.disclose,
     });
     if (res.errors.length) {
-      const msg = JSON.stringify(res.errors);
-      await markJobFailed(job.id, msg);
-      return { id: job.id, status: "failed", detail: msg };
+      return failOrRetry(job, now, JSON.stringify(res.errors));
     }
     await markJobSent(job.id, res.url);
     return { id: job.id, status: "sent", detail: res.url ?? undefined };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    await markJobFailed(job.id, msg);
-    return { id: job.id, status: "failed", detail: msg };
+    return failOrRetry(job, now, e instanceof Error ? e.message : String(e));
   }
 }
