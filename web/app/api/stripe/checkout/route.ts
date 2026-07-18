@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutSession, PlanId } from "@/lib/stripe";
-import { getSession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
 
 /**
- * Create a Stripe Checkout session for the chosen plan and redirect the user
- * to Stripe's hosted checkout. Requires a connected Reddit account so we can
- * tie the subscription to it.
+ * Create a Stripe Checkout session for the chosen plan and redirect to Stripe's
+ * hosted checkout. Requires a connected Reddit account so the resulting
+ * subscription can be tied to the DB user.
  */
 export async function POST(req: NextRequest) {
-  const session = getSession();
-  if (!session.redditUsername) {
+  const user = getCurrentUser();
+  if (!user) {
     return NextResponse.redirect(`${process.env.APP_URL}/api/auth/reddit`, 303);
   }
 
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
   try {
     const checkoutUrl = await createCheckoutSession({
       plan,
-      customerId: session.stripeCustomerId,
-      redditUsername: session.redditUsername,
+      customerId: user.stripe_customer_id ?? undefined,
+      redditUsername: user.reddit_username,
     });
     return NextResponse.redirect(checkoutUrl, 303);
   } catch {

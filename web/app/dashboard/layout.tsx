@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { DisclosureBanner } from "@/components/DisclosureBanner";
-import { getSession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
@@ -12,8 +12,8 @@ const TABS = [
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = getSession();
-  if (!session.redditUsername) redirect("/api/auth/reddit");
+  const user = getCurrentUser();
+  if (!user) redirect("/api/auth/reddit");
 
   return (
     <main>
@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div>
             <h1 className="text-xl font-semibold">Dashboard</h1>
             <p className="text-sm text-neutral-500">
-              u/{session.redditUsername} · {session.plan ?? "free"} plan
+              u/{user.reddit_username} · {user.plan} plan
             </p>
           </div>
         </div>

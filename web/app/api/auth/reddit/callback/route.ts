@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeCode, getMe } from "@/lib/reddit";
-import { getSession, setSession } from "@/lib/session";
+import { upsertUserWithRedditTokens } from "@/lib/repo";
+import { startSession } from "@/lib/session";
 
 /**
  * Reddit redirects here with ?code&state. We verify state, exchange the code
- * for tokens, look up the username, and store it in the session.
- *
- * Scaffold note: tokens live in the signed cookie here for simplicity. In
- * production, persist them (encrypted) in your DB keyed by user id.
+ * for tokens, upsert the user (tokens persisted in the DB), and start a
+ * server-side session.
  */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -25,14 +24,13 @@ export async function GET(req: NextRequest) {
   try {
     const tokens = await exchangeCode(code);
     const me = await getMe(tokens.access_token);
-    setSession({
-      ...getSession(),
+    const user = upsertUserWithRedditTokens({
       redditUsername: me.name,
-      redditAccessToken: tokens.access_token,
-      redditRefreshToken: tokens.refresh_token,
-      redditTokenExpiresAt: Date.now() + tokens.expires_in * 1000,
-      plan: getSession().plan ?? "free",
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt: Date.now() + tokens.expires_in * 1000,
     });
+    startSession(user.id);
   } catch {
     return NextResponse.redirect(`${process.env.APP_URL}/?error=oauth_failed`);
   }

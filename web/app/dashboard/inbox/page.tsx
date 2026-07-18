@@ -1,7 +1,8 @@
 import { PaywallGate } from "@/components/PaywallGate";
 import { requirePaid } from "@/lib/subscription";
 import { getInbox } from "@/lib/reddit";
-import { getSession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
+import { getFreshAccessToken } from "@/lib/reddit-auth";
 
 /**
  * Inbox management. Loads replies via the official API. Replying posts through
@@ -9,15 +10,20 @@ import { getSession } from "@/lib/session";
  */
 export default async function InboxPage() {
   const gate = requirePaid();
-  const session = getSession();
+  const user = getCurrentUser();
 
   let replies: Awaited<ReturnType<typeof getInbox>> = [];
   let loadError: string | null = null;
-  if (gate.ok && session.redditAccessToken) {
-    try {
-      replies = await getInbox(session.redditAccessToken, 25);
-    } catch (e) {
-      loadError = "Could not load inbox — reconnect Reddit if this persists.";
+  if (gate.ok && user) {
+    const token = await getFreshAccessToken(user);
+    if (token) {
+      try {
+        replies = await getInbox(token, 25);
+      } catch (e) {
+        loadError = "Could not load inbox — reconnect Reddit if this persists.";
+      }
+    } else {
+      loadError = "Reddit session expired — reconnect your account.";
     }
   }
 

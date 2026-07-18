@@ -1,8 +1,8 @@
 /**
- * Paywall gating. The dashboard's action features (scheduling, inbox replies,
- * AI drafting) require an active paid plan; read-only views stay open.
+ * Paywall gating. Plan now comes from the DB user record (via the session),
+ * not from the cookie.
  */
-import { getSession } from "./session";
+import { getCurrentUser } from "./session";
 
 export type Plan = "free" | "starter" | "pro";
 
@@ -22,7 +22,7 @@ export const PLANS = {
 } as const;
 
 export function currentPlan(): Plan {
-  return getSession().plan ?? "free";
+  return getCurrentUser()?.plan ?? "free";
 }
 
 export function hasActivePlan(): boolean {
@@ -31,10 +31,11 @@ export function hasActivePlan(): boolean {
 
 /** Feature gate used by server components / route handlers. */
 export function requirePaid(): { ok: true } | { ok: false; reason: string } {
-  if (!getSession().redditUsername) {
+  const user = getCurrentUser();
+  if (!user) {
     return { ok: false, reason: "Connect your Reddit account first." };
   }
-  if (!hasActivePlan()) {
+  if (user.plan === "free") {
     return { ok: false, reason: "This feature requires an active subscription." };
   }
   return { ok: true };

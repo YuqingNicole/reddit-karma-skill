@@ -16,7 +16,11 @@ every post approved by a human.
 - Tailwind CSS
 - Reddit OAuth2 (official API) — `lib/reddit.ts`
 - Stripe subscriptions — `lib/stripe.ts`, `app/api/stripe/*`
-- Signed-cookie session (scaffold) — `lib/session.ts`
+- SQLite persistence (better-sqlite3) — `lib/db.ts` (schema), `lib/repo.ts`
+  (the only module that touches the DB — swap it for Postgres in one place)
+- Server-side sessions — opaque id in an httpOnly cookie (`lib/session.ts`),
+  resolved to a user row in the DB; Reddit tokens + plan live in the DB, never
+  the cookie
 
 ## Run
 
@@ -34,7 +38,7 @@ npm run typecheck            # optional: tsc --noEmit
 |------|-------|-------|
 | Reddit OAuth | `REDDIT_CLIENT_ID/SECRET`, `REDDIT_USER_AGENT` | Create a **web app** at reddit.com/prefs/apps; redirect URI = `$APP_URL/api/auth/reddit/callback`. Reddit requires the exact User-Agent format. |
 | Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` | Create two recurring prices; point a webhook at `/api/stripe/webhook`. |
-| Sessions | `SESSION_SECRET` | `openssl rand -hex 32`. |
+| Database | `DATABASE_PATH` | SQLite file (default `./data/autoreddit.db`); auto-created on first run. |
 | AI drafts | `ANTHROPIC_API_KEY` | Optional; without it the assistant returns a placeholder. |
 
 ## Routes
@@ -61,15 +65,30 @@ npm run typecheck            # optional: tsc --noEmit
   (`DRAFTING_POLICY.autoSend === false`), and won't write as a fake persona.
 - **Disclosure** — an in-app banner, and an optional footer on scheduled posts.
 
-## What's stubbed (finish before production)
+## Persistence (`lib/db.ts`, `lib/repo.ts`)
 
-- **Persistence**: replace the cookie session with a DB. Store Reddit tokens
-  (encrypted) and subscription state there — the Stripe webhook can't write the
-  cookie, so plan state *must* live in a DB (see the TODOs in
-  `app/api/stripe/webhook/route.ts`).
-- **Scheduler worker**: `/api/reddit/schedule` records jobs; add a cron/queue
-  worker that sends them at `runAt` via `submitPost`, honoring rate limits.
-- **Token refresh**: call `refreshToken` when `redditTokenExpiresAt` passes.
+Reddit OAuth tokens and subscription state live in SQLite, not the cookie:
+
+- `users` — reddit username, access/refresh tokens + expiry, stripe customer id,
+  plan, subscription status.
+- `sessions` — opaque session id → user id, with an expiry (FK-cascades on user
+  delete). The cookie holds only the session id.
+
+Flow: Reddit login upserts the user + tokens and starts a session; the Stripe
+webhook is the source of truth for `plan` (keyed by reddit username on first
+checkout, by stripe customer id thereafter); expired Reddit tokens are refreshed
+and re-persisted automatically (`lib/reddit-auth.ts`).
+
+**Swap to Postgres** by reimplementing `lib/db.ts` + `lib/repo.ts` against your
+driver — nothing else touches the database.
+
+## What's still stubbed (finish before production)
+
+- **Scheduler worker**: `/api/reddit/schedule` validates + would enqueue jobs;
+  add a cron/queue worker that sends them at `runAt` via `submitPost`, honoring
+  rate limits. (A `jobs` table is the natural next migration.)
+- **Token encryption at rest**: tokens are stored plaintext in SQLite for the
+  scaffold — encrypt them (or use a secrets manager) in production.
 - **Dashboard data**: overview counts and the queue list are placeholders.
 
 ## Not affiliated with Reddit, Inc.

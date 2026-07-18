@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
-import { getSession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
 
 const FEATURES = [
   {
@@ -18,7 +18,7 @@ const FEATURES = [
 ];
 
 export default function Home() {
-  const authed = Boolean(getSession().redditUsername);
+  const authed = Boolean(getCurrentUser());
   return (
     <main>
       <Nav authed={authed} />

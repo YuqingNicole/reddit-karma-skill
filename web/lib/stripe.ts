@@ -32,6 +32,9 @@ export async function createCheckoutSession(opts: {
     success_url: `${process.env.APP_URL}/dashboard?checkout=success`,
     cancel_url: `${process.env.APP_URL}/pricing?checkout=cancelled`,
     metadata: { plan: opts.plan, redditUsername: opts.redditUsername ?? "" },
+    // Copy the plan onto the subscription so later subscription.* webhook
+    // events (renewals, cancellations) still know which tier this is.
+    subscription_data: { metadata: { plan: opts.plan } },
   });
   if (!session.url) throw new Error("Stripe did not return a checkout URL.");
   return session.url;

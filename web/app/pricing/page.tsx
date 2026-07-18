@@ -1,9 +1,9 @@
 import { Nav } from "@/components/Nav";
 import { PLANS } from "@/lib/subscription";
-import { getSession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
 
 export default function PricingPage() {
-  const authed = Boolean(getSession().redditUsername);
+  const authed = Boolean(getCurrentUser());
   const plans = [
     { id: "starter" as const, ...PLANS.starter },
     { id: "pro" as const, ...PLANS.pro, highlight: true },

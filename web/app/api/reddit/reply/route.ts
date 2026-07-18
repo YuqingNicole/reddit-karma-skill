@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePaid } from "@/lib/subscription";
-import { getSession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
+import { getFreshAccessToken } from "@/lib/reddit-auth";
 import { submitComment } from "@/lib/reddit";
 
 /**
@@ -12,17 +13,22 @@ export async function POST(req: NextRequest) {
   if (!gate.ok) {
     return NextResponse.redirect(`${process.env.APP_URL}/pricing`, 303);
   }
-  const session = getSession();
+  const user = getCurrentUser();
   const form = await req.formData();
   const thingId = String(form.get("thingId") ?? "");
   const text = String(form.get("text") ?? "").trim();
 
-  if (!session.redditAccessToken || !thingId || !text) {
+  if (!user || !thingId || !text) {
     return NextResponse.redirect(`${process.env.APP_URL}/dashboard/inbox?error=missing`, 303);
   }
 
+  const token = await getFreshAccessToken(user);
+  if (!token) {
+    return NextResponse.redirect(`${process.env.APP_URL}/api/auth/reddit`, 303);
+  }
+
   try {
-    const { errors } = await submitComment(session.redditAccessToken, thingId, text);
+    const { errors } = await submitComment(token, thingId, text);
     if (errors.length) {
       return NextResponse.redirect(`${process.env.APP_URL}/dashboard/inbox?error=reddit`, 303);
     }

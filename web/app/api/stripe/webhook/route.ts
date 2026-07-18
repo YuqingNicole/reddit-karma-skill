@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import {
+  getUserByRedditUsername,
+  getUserByStripeCustomerId,
+  setStripeCustomer,
+  setSubscription,
+} from "@/lib/repo";
+import type { Plan } from "@/lib/subscription";
 
 // Stripe needs the raw body to verify the signature.
 export const runtime = "nodejs";
 
+function planFrom(value: unknown): Plan {
+  return value === "starter" || value === "pro" ? value : "free";
+}
+
 /**
- * Stripe webhook. On checkout.session.completed / subscription updates, set the
- * customer's plan in YOUR DATABASE (keyed by client_reference_id = reddit
- * username, or the Stripe customer id).
- *
- * Scaffold note: the cookie session can't be written from a webhook (no user
- * request context), so plan state MUST live in a DB in production. The TODOs
- * below mark where to write it.
+ * Stripe webhook — the source of truth for subscription state, written to the
+ * DB (keyed by reddit username on first checkout, by stripe customer id after).
  */
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
@@ -24,28 +30,31 @@ export async function POST(req: NextRequest) {
   let event;
   try {
     event = stripe.webhooks.constructEvent(raw, sig, secret);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "invalid signature" }, { status: 400 });
   }
 
   switch (event.type) {
     case "checkout.session.completed": {
       const s = event.data.object as any;
-      const plan = s.metadata?.plan; // "starter" | "pro"
-      const redditUsername = s.client_reference_id;
-      const stripeCustomerId = s.customer;
-      // TODO: upsert user { redditUsername } -> { plan, stripeCustomerId, active: true }
-      void plan;
-      void redditUsername;
-      void stripeCustomerId;
+      const user = s.client_reference_id
+        ? getUserByRedditUsername(s.client_reference_id)
+        : null;
+      if (user) {
+        if (s.customer) setStripeCustomer(user.id, s.customer as string);
+        setSubscription(user.id, planFrom(s.metadata?.plan), "active");
+      }
       break;
     }
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const sub = event.data.object as any;
-      const active = sub.status === "active" || sub.status === "trialing";
-      // TODO: update user by stripe customer id -> { active, plan: active ? plan : "free" }
-      void active;
+      const user = getUserByStripeCustomerId(sub.customer as string);
+      if (user) {
+        const active = sub.status === "active" || sub.status === "trialing";
+        const plan = planFrom(sub.metadata?.plan ?? user.plan);
+        setSubscription(user.id, active ? plan : "free", sub.status);
+      }
       break;
     }
     default:
