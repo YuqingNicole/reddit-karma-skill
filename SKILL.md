@@ -57,3 +57,9 @@ Track daily usage across all three skills to avoid triggering Reddit spam detect
 - **Account:** YOUR_REDDIT_USERNAME
 - **Target:** 1,000 karma
 - Check current karma by running Step 1 of `reddit-cultivate`.
+
+## Community-first growth add-on
+
+For strategy, compliant drafting, and pre-post review, load [`skills/community-growth/SKILL.md`](skills/community-growth/SKILL.md). It adds a current-rule verification gate, transparent affiliation disclosure, and a deletion test: removing a product name and link must leave a complete, useful contribution.
+
+Its `references/` directory includes the original account-performance learnings plus the updated cultivation and promotion checklists. This layer governs recommendation and drafting; existing browser/CLI workflows still require accountable human review before any write action.
